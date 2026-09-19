@@ -1,0 +1,12 @@
+{
+  "name": "smart-led-calc",
+  "version": "1.0.0",
+  "description": "SmartChoice LED Calculator - calculadora de paineis LED para eventos",
+  "private": true,
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}
