@@ -739,13 +739,15 @@
             const maxPhaseAmps = Math.max(...phaseLoads);
             let quadro = DIAG_CFG.quadroOptions.find(q => q * DIAG_CFG.marginQuadro >= maxPhaseAmps) || null;
 
+            const framesTotal = secs.reduce((a, s) => a + s.frames, 0);
             const totals = {
-                frames: secs.reduce((a, s) => a + s.frames, 0),
+                frames: framesTotal,
                 stacks: suspended ? 0 : secs.reduce((a, s) => a + s.stacks, 0),
                 pesosCount: suspended ? 0 : secs.reduce((a, s) => a + s.pesosCount, 0),
                 garras: suspended ? 0 : secs.reduce((a, s) => a + s.garras, 0),
                 caixas: secs.reduce((a, s) => a + s.caixas, 0),
-                spens: suspended ? secs.reduce((a, s) => a + s.frames, 0) : 0
+                spens: suspended ? Math.ceil(framesTotal / 2) : 0,
+                manilhas: suspended ? Math.ceil(framesTotal / 2) : 0
             };
             const maxTh = Math.max(...secs.map(s => s.th));
             const totalTw = secs.reduce((a, s) => a + s.tw, 0) + DIAG_CFG.gapTiles * (secs.length - 1);
@@ -1144,7 +1146,7 @@
             if (d.warnOver16) html += cell('r', 'Aviso', d.maxCircuitAmps.toFixed(1) + ' A/circuito > 16A');
             html += cell('', 'Quadro', (d.quadro ? d.quadro + 'A' : '>125A') + ' · L1 ' + d.phaseLoads[0].toFixed(1) + ' / L2 ' + d.phaseLoads[1].toFixed(1) + ' / L3 ' + d.phaseLoads[2].toFixed(1) + ' A');
             html += cell('', 'Estrutura', d.suspended
-                ? d.totals.spens + ' spens truss · ' + d.totals.frames + ' frames · ' + d.totals.caixas + ' caixas'
+                ? d.totals.spens + ' spens · ' + d.totals.manilhas + ' manilhas · ' + d.totals.frames + ' frames · ' + d.totals.caixas + ' caixas'
                 : d.totals.caixas + ' caixas · ' + d.totals.stacks + ' stacks · ' + d.totals.pesosCount + ' pesos · ' + d.totals.garras + ' garras');
             document.getElementById('chips').innerHTML = html;
         }
@@ -1166,7 +1168,10 @@
                 ['est', 'Frames de chão 50cm', d.totals.frames + ' un', '1 por coluna']
             ];
             if (d.suspended) {
-                rows.push(['est', 'Spens de truss 2m', d.totals.spens + ' un', '1 spen de 2m por cada frame de chão']);
+                rows.push(
+                    ['est', 'Spens de truss 2m', d.totals.spens + ' un', '1 spen de 2m por cada 2 frames de chão'],
+                    ['est', 'Manilhas', d.totals.manilhas + ' un', '1 manilha por spen']
+                );
             } else {
                 rows.push(
                     ['est', 'Stacks (1m)', d.totals.stacks + ' un', '1 por metro de altura × 1 por cada ' + DIAG_CFG.stackEveryCols + ' colunas (mín. 1)'],
@@ -1309,7 +1314,8 @@
             itemRow('Caixas de tiles', '1 caixa = ' + d.brand.perBox + ' tiles · ' + d.brand.name, d.totals.caixas + ' cx');
             itemRow('Frames de chão 50cm', '1 por coluna de tiles', d.totals.frames + ' un');
             if (d.suspended) {
-                itemRow('Spens de truss 2m', '1 spen de 2m por cada frame de chão', d.totals.spens + ' un');
+                itemRow('Spens de truss 2m', '1 spen de 2m por cada 2 frames de chão', d.totals.spens + ' un');
+                itemRow('Manilhas', '1 manilha por spen', d.totals.manilhas + ' un');
             } else {
                 itemRow('Stacks (1m)', '1 por metro de altura × 1 por cada 3 colunas (mín. 1)', d.totals.stacks + ' un');
                 itemRow('Pesos 10kg', '2 por metro de altura por stack (mín. 2)', d.totals.pesosCount + ' un (' + (d.totals.pesosCount * 10) + ' kg)');
