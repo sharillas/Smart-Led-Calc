@@ -1,4 +1,4 @@
-﻿[package]
+[package]
 name = "smart-led-calc"
 version = "1.1.0"
 description = "SmartChoice LED Calculator - calculadora de paineis LED para eventos"
