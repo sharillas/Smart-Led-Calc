@@ -1381,6 +1381,7 @@
             renderSections();
             setLayer('sig'); setDetail('simples');
             diagDraw();
+            if (location.hash === '#diagram') showView('diagram');
             if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
                 navigator.serviceWorker.register('sw.js').catch(function(){});
             }
