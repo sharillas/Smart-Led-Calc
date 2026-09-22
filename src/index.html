@@ -268,6 +268,12 @@
                             <option value="r5">NovaStar MCTRL R5 · 8 portas</option>
                         </select>
                     </div>
+                    <div class="field"><label>Montagem</label>
+                        <select id="mountD">
+                            <option value="chao" selected>Chão (stacks + pesos)</option>
+                            <option value="suspenso">Suspenso em truss</option>
+                        </select>
+                    </div>
                     <div class="field"><label>Redundância</label>
                         <label style="display:flex;align-items:center;gap:8px;font-family:'Cascadia Mono',Consolas,monospace;font-size:0.75rem;color:#9C9484;cursor:pointer;padding:8px 0;">
                             <input type="checkbox" id="redunD"> 100% (main + backup)
@@ -614,6 +620,7 @@
         function diagCompute() {
             const brand = DIAG_BRANDS[document.getElementById('brandD').value] || DIAG_BRANDS.reto;
             const redun = document.getElementById('redunD').checked;
+            const suspended = document.getElementById('mountD').value === 'suspenso';
             const ctrl = DIAG_CTRLS[document.getElementById('ctrlD').value];
 
             const secs = diagSections.map((s) => {
@@ -734,10 +741,11 @@
 
             const totals = {
                 frames: secs.reduce((a, s) => a + s.frames, 0),
-                stacks: secs.reduce((a, s) => a + s.stacks, 0),
-                pesosCount: secs.reduce((a, s) => a + s.pesosCount, 0),
-                garras: secs.reduce((a, s) => a + s.garras, 0),
-                caixas: secs.reduce((a, s) => a + s.caixas, 0)
+                stacks: suspended ? 0 : secs.reduce((a, s) => a + s.stacks, 0),
+                pesosCount: suspended ? 0 : secs.reduce((a, s) => a + s.pesosCount, 0),
+                garras: suspended ? 0 : secs.reduce((a, s) => a + s.garras, 0),
+                caixas: secs.reduce((a, s) => a + s.caixas, 0),
+                spens: suspended ? secs.reduce((a, s) => a + s.frames, 0) : 0
             };
             const maxTh = Math.max(...secs.map(s => s.th));
             const totalTw = secs.reduce((a, s) => a + s.tw, 0) + DIAG_CFG.gapTiles * (secs.length - 1);
@@ -745,7 +753,7 @@
             return { secs, tt, chainsMain, chainTiles, chainSec, portsMain, portsBackup, portsTotal,
                 units, chainsPerUnit, tilesPerUnit, ctrl, capacityWarn, chainsPwr, socapex, polvos,
                 watts, ampsTotal, phaseLoads, maxPhaseAmps, assign, quadro, totals, redun, brand, maxTh, totalTw,
-                maxCircuitAmps, warnOver16 };
+                maxCircuitAmps, warnOver16, suspended };
         }
 
         function wiringOrder(tw, th) {
@@ -1135,7 +1143,9 @@
             html += cell('g', 'Power', d.chainsPwr + ' circuitos CE · ' + d.socapex + ' soca · ' + d.polvos + ' polvo');
             if (d.warnOver16) html += cell('r', 'Aviso', d.maxCircuitAmps.toFixed(1) + ' A/circuito > 16A');
             html += cell('', 'Quadro', (d.quadro ? d.quadro + 'A' : '>125A') + ' · L1 ' + d.phaseLoads[0].toFixed(1) + ' / L2 ' + d.phaseLoads[1].toFixed(1) + ' / L3 ' + d.phaseLoads[2].toFixed(1) + ' A');
-            html += cell('', 'Estrutura', d.totals.caixas + ' caixas · ' + d.totals.stacks + ' stacks · ' + d.totals.pesosCount + ' pesos · ' + d.totals.garras + ' garras');
+            html += cell('', 'Estrutura', d.suspended
+                ? d.totals.spens + ' spens truss · ' + d.totals.frames + ' frames · ' + d.totals.caixas + ' caixas'
+                : d.totals.caixas + ' caixas · ' + d.totals.stacks + ' stacks · ' + d.totals.pesosCount + ' pesos · ' + d.totals.garras + ' garras');
             document.getElementById('chips').innerHTML = html;
         }
 
@@ -1153,10 +1163,18 @@
             const rows = [
                 ['est', 'Tiles 500×500mm', d.tt + ' un', d.secs.map(s => s.tw + '×' + s.th).join(' + ') + ' (colunas × filas por secção)'],
                 ['est', 'Caixas de tiles', d.totals.caixas + ' cx', '1 caixa = ' + d.brand.perBox + ' tiles · ' + d.brand.name],
-                ['est', 'Frames de chão 50cm', d.totals.frames + ' un', '1 por coluna'],
-                ['est', 'Stacks (1m)', d.totals.stacks + ' un', '1 por metro de altura × 1 por cada ' + DIAG_CFG.stackEveryCols + ' colunas (mín. 1)'],
-                ['est', 'Pesos 10kg', d.totals.pesosCount + ' un (' + (d.totals.pesosCount * 10) + ' kg)', '2 por metro de altura por stack (mín. 2)'],
-                ['est', 'Garras', d.totals.garras + ' un', DIAG_CFG.garrasPerStack + ' por stack'],
+                ['est', 'Frames de chão 50cm', d.totals.frames + ' un', '1 por coluna']
+            ];
+            if (d.suspended) {
+                rows.push(['est', 'Spens de truss 2m', d.totals.spens + ' un', '1 spen de 2m por cada frame de chão']);
+            } else {
+                rows.push(
+                    ['est', 'Stacks (1m)', d.totals.stacks + ' un', '1 por metro de altura × 1 por cada ' + DIAG_CFG.stackEveryCols + ' colunas (mín. 1)'],
+                    ['est', 'Pesos 10kg', d.totals.pesosCount + ' un (' + (d.totals.pesosCount * 10) + ' kg)', '2 por metro de altura por stack (mín. 2)'],
+                    ['est', 'Garras', d.totals.garras + ' un', DIAG_CFG.garrasPerStack + ' por stack']
+                );
+            }
+            rows.push(
                 ['sig', 'Cabos rede 20m', d.portsTotal + ' un', d.portsMain + ' main + ' + d.portsBackup + ' backup'],
                 ['sig', 'Cabos rede link 70cm', d.tt + ' un', '1 por tile'],
                 ['pwr', 'PowerCon CE 10m', d.chainsPwr + ' un', '1 por circuito de power (igual ao sinal · ' + d.maxCircuitAmps.toFixed(1) + 'A máx)'],
@@ -1165,7 +1183,7 @@
                 ['dis', 'Polvos Socapex 6×CE', d.polvos + ' un', '1 por cada ' + DIAG_CFG.circuitsPerSocapex + ' PowerCon CE'],
                 ['dis', 'Quadro elétrico', d.quadro ? d.quadro + 'A' : '>125A (dividir)', 'L1 ' + d.phaseLoads[0].toFixed(1) + ' · L2 ' + d.phaseLoads[1].toFixed(1) + ' · L3 ' + d.phaseLoads[2].toFixed(1) + ' A/fase · margem 80%'],
                 ['sig', 'Controladoras ' + d.ctrl.name, d.units + ' un', d.ctrl.ports + ' portas cada · distribuição ' + d.tilesPerUnit.join('/') + ' tiles']
-            ];
+            );
             if (d.capacityWarn) rows.push(['sig', 'Capacidade excedida', '—', d.tt + ' tiles > ' + d.units + ' × ' + d.ctrl.maxTiles + ' tiles (rever!)']);
             if (d.warnOver16) rows.push(['pwr', '⚠ PowerCon acima de 16A', d.maxCircuitAmps.toFixed(1) + ' A/circuito', 'circuito igual ao sinal — verificar cabos CE']);
             document.getElementById('bom').innerHTML = rows.map(r =>
@@ -1290,9 +1308,13 @@
             itemRow('Tiles 500×500mm', d.secs.map(s => 'S: ' + s.tw + '×' + s.th).join('  '), d.tt + ' un');
             itemRow('Caixas de tiles', '1 caixa = ' + d.brand.perBox + ' tiles · ' + d.brand.name, d.totals.caixas + ' cx');
             itemRow('Frames de chão 50cm', '1 por coluna de tiles', d.totals.frames + ' un');
-            itemRow('Stacks (1m)', '1 por metro de altura × 1 por cada 3 colunas (mín. 1)', d.totals.stacks + ' un');
-            itemRow('Pesos 10kg', '2 por metro de altura por stack (mín. 2)', d.totals.pesosCount + ' un (' + (d.totals.pesosCount * 10) + ' kg)');
-            itemRow('Garras', '2 por stack', d.totals.garras + ' un');
+            if (d.suspended) {
+                itemRow('Spens de truss 2m', '1 spen de 2m por cada frame de chão', d.totals.spens + ' un');
+            } else {
+                itemRow('Stacks (1m)', '1 por metro de altura × 1 por cada 3 colunas (mín. 1)', d.totals.stacks + ' un');
+                itemRow('Pesos 10kg', '2 por metro de altura por stack (mín. 2)', d.totals.pesosCount + ' un (' + (d.totals.pesosCount * 10) + ' kg)');
+                itemRow('Garras', '2 por stack', d.totals.garras + ' un');
+            }
 
             catRow('Sinal');
             itemRow('Cabos rede 20m', d.portsMain + ' main + ' + d.portsBackup + ' backup (1 por porta)', d.portsTotal + ' un');
@@ -1375,6 +1397,7 @@
         // ================= INIT =================
         document.getElementById('brandD').addEventListener('change', diagDraw);
         document.getElementById('ctrlD').addEventListener('change', diagDraw);
+        document.getElementById('mountD').addEventListener('change', diagDraw);
         document.getElementById('redunD').addEventListener('change', diagDraw);
         document.getElementById('zoomD').addEventListener('input', function() { diagZoom = parseFloat(this.value); diagDraw(); });
 
