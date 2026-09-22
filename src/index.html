@@ -24,12 +24,15 @@
         }
         body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); padding: 20px; }
         .container { max-width: 1280px; margin: 0 auto; }
+        .container.wide { max-width: 1560px; }
         .header { background: transparent; border-radius: 24px; padding: 20px 30px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border: 1px solid var(--border-color); }
         .logo-area { display: flex; align-items: center; gap: 15px; }
         .logo-text h1 { font-size: 1.5rem; font-weight: 700; }
         .logo-text p { font-size: 0.8rem; color: var(--text-muted); }
+        .nav { display: flex; gap: 10px; flex-wrap: wrap; }
         .btn { padding: 10px 22px; border-radius: 40px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: 1px solid var(--text-muted); display: flex; align-items: center; gap: 6px; background: transparent; color: var(--text-muted); transition: all 0.2s; }
         .btn:hover { border-color: var(--text-primary); color: var(--text-primary); }
+        .btn.active { border-color: var(--accent-1); color: var(--accent-1); }
         .calculator-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 25px; }
         @media (max-width: 1024px) { .calculator-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) { .calculator-grid { grid-template-columns: 1fr; } }
@@ -90,106 +93,241 @@
         td { padding: 12px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-secondary); }
         .status-available { color: var(--success); font-weight: 600; }
         .status-insufficient { color: var(--warning); font-weight: 600; }
-        .footer-app { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; margin-top: 30px; border-top: 1px solid var(--border-color); font-size: 11px; }
-        .footer-app span:first-child { color: #64748B; }
-        .footer-app span:last-child { color: #475569; font-size: 10px; }
+        .footer-app { display: flex; justify-content: center; align-items: center; padding: 14px 0 6px; margin-top: 30px; border-top: 1px solid var(--border-color); font-size: 12px; color: #64748B; letter-spacing: 0.04em; }
         canvas { max-width: 100%; border-radius: 8px; }
+
+        /* ===== DIAGRAMA DE MONTAGEM (tema industrial) ===== */
+        #pageDiagram { display: none; }
+        #pageDiagram .card { background: #1A1815; border: 1px solid #2E2B25; border-radius: 4px; padding: 16px 18px; margin-bottom: 14px; }
+        #pageDiagram .toolbar { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+        #pageDiagram .field { display: flex; flex-direction: column; gap: 5px; }
+        #pageDiagram .field label { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.72rem; font-weight: 500; color: #6E675A; text-transform: uppercase; letter-spacing: 0.12em; }
+        #pageDiagram .field input, #pageDiagram .field select { background: #14120E; border: 1px solid #38342D; color: #E7E2D6; padding: 8px 10px; border-radius: 3px; font-size: 0.95rem; font-family: 'Cascadia Mono', Consolas, monospace; outline: none; }
+        #pageDiagram .field input:focus, #pageDiagram .field select:focus { border-color: #E3A857; }
+        #pageDiagram .seg { display: flex; border: 1px solid #38342D; border-radius: 3px; padding: 2px; gap: 2px; }
+        #pageDiagram .seg button { border: none; background: transparent; color: #9C9484; padding: 7px 12px; border-radius: 2px; cursor: pointer; font-weight: 500; font-size: 0.78rem; font-family: 'Cascadia Mono', Consolas, monospace; text-transform: uppercase; letter-spacing: 0.06em; transition: all .12s; }
+        #pageDiagram .seg button:hover { color: #E7E2D6; }
+        #pageDiagram .seg button.on-sig { background: rgba(227,168,87,0.14); color: #E3A857; }
+        #pageDiagram .seg button.on-pwr { background: rgba(143,174,139,0.14); color: #8FAE8B; }
+        #pageDiagram .seg button.on-both { background: rgba(231,226,214,0.1); color: #E7E2D6; }
+        #pageDiagram .seg button.on-neutral { background: #38342D; color: #E7E2D6; }
+        #pageDiagram .zbtn { background: #14120E; border: 1px solid #38342D; color: #E7E2D6; width: 30px; height: 30px; border-radius: 3px; cursor: pointer; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 1rem; line-height: 1; transition: all .12s; }
+        #pageDiagram .zbtn:hover { border-color: #E3A857; color: #E3A857; }
+        #pageDiagram .sec-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #2E2B25; flex-wrap: wrap; }
+        #pageDiagram .sec-row:last-child { border-bottom: none; }
+        #pageDiagram .sec-row .sidx { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.75rem; color: #6E675A; width: 46px; letter-spacing: 0.06em; }
+        #pageDiagram .sec-row input { width: 74px; }
+        #pageDiagram .sec-row .x { color: #6E675A; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.85rem; }
+        #pageDiagram .sec-row .sinfo { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.7rem; color: #6E675A; letter-spacing: 0.04em; }
+        #pageDiagram .sec-del { background: transparent; border: 1px solid #38342D; color: #C96A5A; width: 26px; height: 26px; border-radius: 3px; cursor: pointer; font-size: 0.9rem; }
+        #pageDiagram .sec-del:hover { border-color: #C96A5A; }
+        #pageDiagram .btn-add, #pageDiagram .btn-preset { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #E3A857; background: transparent; border: 1px solid rgba(227,168,87,0.45); padding: 8px 14px; border-radius: 3px; cursor: pointer; margin-right: 8px; margin-top: 10px; transition: all .12s; }
+        #pageDiagram .btn-add:hover, #pageDiagram .btn-preset:hover { background: rgba(227,168,87,0.14); }
+        #pageDiagram .cells { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        #pageDiagram .cell { display: flex; flex-direction: column; gap: 3px; min-width: 96px; background: #14120E; border: 1px solid #2E2B25; border-radius: 3px; padding: 7px 12px; }
+        #pageDiagram .cell .k { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: #6E675A; }
+        #pageDiagram .cell .v { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.94rem; color: #E7E2D6; line-height: 1.25; }
+        #pageDiagram .cell.a .v { color: #E3A857; }
+        #pageDiagram .cell.g .v { color: #8FAE8B; }
+        #pageDiagram .cell.r .v { color: #C96A5A; }
+        #pageDiagram canvas { width: 100%; border-radius: 4px; background: #443D32; border: 1px solid #2E2B25; display: block; }
+        #pageDiagram .legend { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 12px; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.8rem; color: #9C9484; letter-spacing: 0.03em; }
+        #pageDiagram .sw { display: inline-block; width: 10px; height: 10px; border: 1px solid rgba(231,226,214,0.35); margin-right: 6px; vertical-align: -1px; }
+        #pageDiagram .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        #pageDiagram .section-title { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.9rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: #E7E2D6; }
+        #pageDiagram .section-title::before { content: '▮'; color: #E3A857; margin-right: 8px; }
+        #pageDiagram .btn-pdf { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #E3A857; background: transparent; border: 1px solid rgba(227,168,87,0.45); padding: 8px 14px; border-radius: 3px; cursor: pointer; transition: all .12s; }
+        #pageDiagram .btn-pdf:hover { background: rgba(227,168,87,0.14); }
+        #pageDiagram table { width: 100%; border-collapse: collapse; }
+        #pageDiagram th { text-align: left; padding: 8px 10px; color: #6E675A; border-bottom: 1px solid #2E2B25; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.68rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; }
+        #pageDiagram td { padding: 9px 10px; border-bottom: 1px solid #2E2B25; color: #9C9484; font-size: 0.95rem; }
+        #pageDiagram td.n { color: #E7E2D6; }
+        #pageDiagram td.q { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 1.1rem; color: #E7E2D6; font-variant-numeric: tabular-nums; }
+        #pageDiagram .tag { font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.66rem; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 2px; }
+        #pageDiagram .tag.est { color: #B8B09E; border: 1px solid rgba(184,176,158,0.4); }
+        #pageDiagram .tag.sig { color: #E3A857; border: 1px solid rgba(227,168,87,0.4); }
+        #pageDiagram .tag.pwr { color: #8FAE8B; border: 1px solid rgba(143,174,139,0.4); }
+        #pageDiagram .tag.dis { color: #A99BB8; border: 1px solid rgba(169,155,184,0.4); }
+        #pageDiagram .footer { text-align: center; margin-top: 22px; padding: 14px 0 6px; border-top: 1px solid #2E2B25; font-family: 'Cascadia Mono', Consolas, monospace; font-size: 0.78rem; letter-spacing: 0.06em; color: #6E675A; }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="appRoot">
         <div class="header">
             <div class="logo-area">
                 <img src="logo.svg" alt="SmartChoice LED Calculator" style="height:45px;max-width:200px;">
                 <div class="logo-text"><h1>SmartChoice LED Calculator</h1><p>LED Wall Calculator</p></div>
             </div>
-            <button class="btn" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+            <div class="nav">
+                <button class="btn active" id="navCalc" onclick="showView('calc')"><i class="fas fa-calculator"></i> Calculadora</button>
+                <button class="btn" id="navDiagram" onclick="showView('diagram')"><i class="fas fa-project-diagram"></i> Diagrama de Montagem</button>
+            </div>
+            <button class="btn" id="btnPdfCalc" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
         </div>
 
-        <div class="calculator-grid">
+        <div id="pageCalc">
+            <div class="calculator-grid">
+                <div class="card">
+                    <div class="card-header"><h2><i class="fas fa-ruler"></i> Dimensões</h2><span class="card-badge">P2.6mm</span></div>
+                    <div class="input-group"><label>Comprimento (m)</label><div class="input-wrapper"><i class="fas fa-arrows-alt-h"></i><input type="number" id="width" value="5" step="0.1" min="0.1" oninput="debouncedUpdate()"></div></div>
+                    <div class="input-group"><label>Altura (m)</label><div class="input-wrapper"><i class="fas fa-arrows-alt-v"></i><input type="number" id="height" value="3" step="0.1" min="0.1" oninput="debouncedUpdate()"></div></div>
+                    <div class="resolution-box"><div class="preview-label">Resolução do LED</div><div class="resolution-value" id="liveResolution">1920 x 1080</div></div>
+                    <div class="result-box">
+                        <div class="result-row"><span class="result-label">Área</span><span class="result-value" id="totalArea">15.0 m²</span></div>
+                        <div class="result-row"><span class="result-label">Tiles</span><span class="result-value" id="totalTilesResult">60</span></div>
+                        <div class="result-row"><span class="result-label">Peso</span><span class="result-value" id="totalWeightResult">540 kg</span></div>
+                        <div class="result-row"><span class="result-label">Marca</span><span class="result-value" id="selectedBrand">Unillumin UPADIII</span></div>
+                    </div>
+                    <div class="preview-box"><div class="preview-label">Pré-visualização</div><canvas id="ledCanvas" width="300" height="200"></canvas><div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:0.85rem;color:var(--text-muted);"><span id="canvasWidth">5.0m</span><span>×</span><span id="canvasHeight">3.0m</span><span style="color:var(--accent-1);font-weight:600;" id="canvasTiles">60 tiles</span></div></div>
+                    <label style="display:block;margin-top:20px;margin-bottom:6px;font-size:0.85rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Marcas em Stock</label>
+                    <div class="brand-grid">
+                        <div class="brand-card selected" id="brandUnillumin" onclick="selectBrand('unillumin')"><div class="brand-icon unillumin">U</div><div class="brand-name">Unillumin</div><div class="brand-model">UPADIII</div><div class="brand-stock">80 tiles</div></div>
+                        <div class="brand-card" id="brandOmegapix" onclick="selectBrand('omegapix')"><div class="brand-icon omegapix">O</div><div class="brand-name">Prolight</div><div class="brand-model">Omegapix 26B</div><div class="brand-stock">240 tiles</div></div>
+                        <div class="brand-card" id="brandTrauluxReto" onclick="selectBrand('traulux-reto')"><div class="brand-icon traulux-reto">T</div><div class="brand-name">Traulux</div><div class="brand-model">T-Rent Reto</div><div class="brand-stock">440 tiles</div></div>
+                        <div class="brand-card" id="brandTrauluxFlex" onclick="selectBrand('traulux-flex')"><div class="brand-icon traulux-flex">F</div><div class="brand-name">Traulux</div><div class="brand-model">T-Rent FLEX</div><div class="brand-stock">160 tiles</div></div>
+                    </div>
+                    <div id="stockStatus" style="font-size:0.85rem;margin-top:8px;"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><h2><i class="fas fa-microchip"></i> Controladores</h2><span class="card-badge">NovaStar</span></div>
+                    <div class="controller-grid">
+                        <div class="controller-item" id="ctrl-novastar4k"><div class="controller-info"><div class="controller-icon" style="color:#3b82f6;">4K</div><div class="controller-details"><h4>MCTRL 4K</h4><p>Máx: 128 tiles · 16 portas</p></div></div><div style="display:flex;align-items:center;"><span class="controller-units" id="novastar4kUnits">1</span><span class="controller-badge recommended" id="novastar4kRecommended">RECOMENDADO</span></div></div>
+                        <div class="controller-item" id="ctrl-novastarR5"><div class="controller-info"><div class="controller-icon" style="color:#10b981;">R5</div><div class="controller-details"><h4>MCTRL R5</h4><p>Máx: 64 tiles · 8 portas</p></div></div><div style="display:flex;align-items:center;"><span class="controller-units" id="novastarR5Units">1</span><span class="controller-badge alternative" id="novastarR5Recommended">ALTERNATIVA</span></div></div>
+                        <div class="controller-item" id="ctrl-mx40pro"><div class="controller-info"><div class="controller-icon" style="color:#8b5cf6;">MX</div><div class="controller-details"><h4>MX40 PRO</h4><p>Máx: 160 tiles · 20 portas</p></div></div><div style="display:flex;align-items:center;"><span class="controller-units" id="mx40proUnits">1</span><span class="controller-badge premium" id="mx40proRecommended">PREMIUM</span></div></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><h2><i class="fas fa-bolt"></i> Energia & Peso</h2><span class="card-badge">230V</span></div>
+                    <div class="power-grid"><div class="power-card"><div class="power-label">Potência/Tile</div><div class="power-value" id="powerPerTile">210</div><span style="font-size:0.8rem;color:var(--text-muted);">W</span></div><div class="power-card"><div class="power-label">Total Tiles</div><div class="power-value" id="totalTilesPower">60</div></div></div>
+                    <div class="energy-box"><div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;text-align:center;"><div><div style="font-size:0.8rem;color:var(--text-muted);">Total Watts</div><div style="font-size:1.8rem;font-weight:700;color:var(--success);" id="totalPowerWatts">12.600</div></div><div><div style="font-size:0.8rem;color:var(--text-muted);">Total Amperes</div><div style="font-size:1.8rem;font-weight:700;color:var(--success);" id="totalAmps">54.8</div></div></div></div>
+                    <div class="phase-grid"><div class="phase-item"><div class="power-label">L1</div><div class="phase-value" id="currentL1">18.3</div></div><div class="phase-item"><div class="power-label">L2</div><div class="phase-value" id="currentL2">18.3</div></div><div class="phase-item"><div class="power-label">L3</div><div class="phase-value" id="currentL3">18.3</div></div></div>
+                    <div class="weight-box"><div style="text-align:center;margin-bottom:15px;font-weight:600;color:var(--text-primary);">Peso do Ledwall</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;"><div><div style="font-size:0.7rem;color:var(--text-muted);">Tile</div><div style="font-size:1.3rem;font-weight:700;color:var(--text-primary);">9</div><span style="font-size:0.7rem;color:var(--text-muted);">kg</span></div><div><div style="font-size:0.7rem;color:var(--text-muted);">Total</div><div style="font-size:1.3rem;font-weight:700;color:var(--text-primary);" id="totalWeight">540</div><span style="font-size:0.7rem;color:var(--text-muted);">kg</span></div><div><div style="font-size:0.7rem;color:var(--text-muted);">Ton</div><div style="font-size:1.3rem;font-weight:700;color:var(--text-primary);" id="totalWeightTons">0.54</div><span style="font-size:0.7rem;color:var(--text-muted);">t</span></div></div></div>
+                </div>
+            </div>
+
+            <div class="stock-table">
+                <h3><i class="fas fa-boxes"></i> Stock Disponível - P2.6mm INDOOR</h3>
+                <table>
+                    <thead><tr><th>Marca</th><th>Modelo</th><th>Stock</th><th>Necessário</th><th>Status</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Unillumin</strong></td><td>UPADIII</td><td>80</td><td id="neededTiles">60</td><td id="unilluminStatus" class="status-available">✅ Disponível</td></tr>
+                        <tr><td><strong>Prolight</strong></td><td>Omegapix 26B</td><td>240</td><td id="neededTiles2">60</td><td id="omegapixStatus" class="status-available">✅ Disponível</td></tr>
+                        <tr><td><strong>Traulux</strong></td><td>T-Rent Reto</td><td>440</td><td id="neededTiles3">60</td><td id="trauluxRetoStatus" class="status-available">✅ Disponível</td></tr>
+                        <tr><td><strong>Traulux</strong></td><td>T-Rent FLEX</td><td>160</td><td id="neededTiles4">60</td><td id="trauluxFlexStatus" class="status-available">✅ Disponível</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="pageDiagram">
             <div class="card">
-                <div class="card-header"><h2><i class="fas fa-ruler"></i> Dimensões</h2><span class="card-badge">P2.6mm</span></div>
-                <div class="input-group"><label>Comprimento (m)</label><div class="input-wrapper"><i class="fas fa-arrows-alt-h"></i><input type="number" id="width" value="5" step="0.1" min="0.1" oninput="debouncedUpdate()"></div></div>
-                <div class="input-group"><label>Altura (m)</label><div class="input-wrapper"><i class="fas fa-arrows-alt-v"></i><input type="number" id="height" value="3" step="0.1" min="0.1" oninput="debouncedUpdate()"></div></div>
-                <div class="resolution-box"><div class="preview-label">Resolução do LED</div><div class="resolution-value" id="liveResolution">1920 x 1080</div></div>
-                <div class="result-box">
-                    <div class="result-row"><span class="result-label">Área</span><span class="result-value" id="totalArea">15.0 m²</span></div>
-                    <div class="result-row"><span class="result-label">Tiles</span><span class="result-value" id="totalTilesResult">60</span></div>
-                    <div class="result-row"><span class="result-label">Peso</span><span class="result-value" id="totalWeightResult">540 kg</span></div>
-                    <div class="result-row"><span class="result-label">Marca</span><span class="result-value" id="selectedBrand">Unillumin UPADIII</span></div>
+                <div class="card-head" style="margin-bottom:4px;">
+                    <h2 class="section-title">Configuração do Wall</h2>
                 </div>
-                <div class="preview-box"><div class="preview-label">Pré-visualização</div><canvas id="ledCanvas" width="300" height="200"></canvas><div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:0.85rem;color:var(--text-muted);"><span id="canvasWidth">5.0m</span><span>×</span><span id="canvasHeight">3.0m</span><span style="color:var(--accent-1);font-weight:600;" id="canvasTiles">60 tiles</span></div></div>
-                <label style="display:block;margin-top:20px;margin-bottom:6px;font-size:0.85rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Marcas em Stock</label>
-                <div class="brand-grid">
-                    <div class="brand-card selected" id="brandUnillumin" onclick="selectBrand('unillumin')"><div class="brand-icon unillumin">U</div><div class="brand-name">Unillumin</div><div class="brand-model">UPADIII</div><div class="brand-stock">80 tiles</div></div>
-                    <div class="brand-card" id="brandOmegapix" onclick="selectBrand('omegapix')"><div class="brand-icon omegapix">O</div><div class="brand-name">Prolight</div><div class="brand-model">Omegapix 26B</div><div class="brand-stock">240 tiles</div></div>
-                    <div class="brand-card" id="brandTrauluxReto" onclick="selectBrand('traulux-reto')"><div class="brand-icon traulux-reto">T</div><div class="brand-name">Traulux</div><div class="brand-model">T-Rent Reto</div><div class="brand-stock">440 tiles</div></div>
-                    <div class="brand-card" id="brandTrauluxFlex" onclick="selectBrand('traulux-flex')"><div class="brand-icon traulux-flex">F</div><div class="brand-name">Traulux</div><div class="brand-model">T-Rent FLEX</div><div class="brand-stock">160 tiles</div></div>
+                <div id="sectionsEditor"></div>
+                <div>
+                    <button class="btn-add" onclick="addSection()">+ Adicionar secção</button>
+                    <button class="btn-preset" onclick="loadPreset('simples')">Wall único 20×3</button>
+                    <button class="btn-preset" onclick="loadPreset('composto')">Exemplo composto (5 secções)</button>
                 </div>
-                <div id="stockStatus" style="font-size:0.85rem;margin-top:8px;"></div>
             </div>
 
             <div class="card">
-                <div class="card-header"><h2><i class="fas fa-microchip"></i> Controladores</h2><span class="card-badge">NovaStar</span></div>
-                <div class="controller-grid">
-                    <div class="controller-item" id="ctrl-novastar4k"><div class="controller-info"><div class="controller-icon" style="color:#3b82f6;">4K</div><div class="controller-details"><h4>MCTRL 4K</h4><p>Máx: 128 tiles</p></div></div><div style="display:flex;align-items:center;"><span class="controller-units" id="novastar4kUnits">1</span><span class="controller-badge recommended" id="novastar4kRecommended">RECOMENDADO</span></div></div>
-                    <div class="controller-item" id="ctrl-novastarR5"><div class="controller-info"><div class="controller-icon" style="color:#10b981;">R5</div><div class="controller-details"><h4>MCTRL R5</h4><p>Máx: 64 tiles</p></div></div><div style="display:flex;align-items:center;"><span class="controller-units" id="novastarR5Units">1</span><span class="controller-badge alternative" id="novastarR5Recommended">ALTERNATIVA</span></div></div>
-                    <div class="controller-item" id="ctrl-mx40pro"><div class="controller-info"><div class="controller-icon" style="color:#8b5cf6;">MX</div><div class="controller-details"><h4>MX40 PRO</h4><p>Máx: 160 tiles</p></div></div><div style="display:flex;align-items:center;"><span class="controller-units" id="mx40proUnits">1</span><span class="controller-badge premium" id="mx40proRecommended">PREMIUM</span></div></div>
+                <div class="toolbar">
+                    <div class="field"><label>Marca</label>
+                        <select id="brandD">
+                            <option value="unillumin">Unillumin UPADIII · 160W · 6/cx</option>
+                            <option value="omegapix">Prolight Omegapix 26B · 160W · 8/cx</option>
+                            <option value="reto" selected>Traulux T-Rent Reto · 210W · 8/cx</option>
+                            <option value="flex">Traulux T-Rent FLEX · 210W · 8/cx</option>
+                        </select>
+                    </div>
+                    <div class="field"><label>Controladora</label>
+                        <select id="ctrlD">
+                            <option value="mctrl4k" selected>NovaStar MCTRL 4K · 16 portas</option>
+                            <option value="mx40pro">NovaStar MX40 PRO · 20 portas</option>
+                            <option value="r5">NovaStar MCTRL R5 · 8 portas</option>
+                        </select>
+                    </div>
+                    <div class="field"><label>Redundância</label>
+                        <label style="display:flex;align-items:center;gap:8px;font-family:'Cascadia Mono',Consolas,monospace;font-size:0.75rem;color:#9C9484;cursor:pointer;padding:8px 0;">
+                            <input type="checkbox" id="redunD"> 100% (main + backup)
+                        </label>
+                    </div>
+                    <div class="field"><label>Zoom</label>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <button class="zbtn" onclick="zoomBy(0.8)" title="Reduzir zoom">−</button>
+                            <input type="range" id="zoomD" min="0.25" max="6" step="0.05" value="1" style="width:110px" title="Zoom — arrasta no diagrama para deslocar">
+                            <button class="zbtn" onclick="zoomBy(1.25)" title="Aumentar zoom">+</button>
+                        </div>
+                    </div>
+                    <div class="field"><label>Vista</label>
+                        <div class="seg">
+                            <button id="btnSig" onclick="setLayer('sig')">Sinal</button>
+                            <button id="btnPwr" onclick="setLayer('pwr')">Power</button>
+                            <button id="btnBoth" onclick="setLayer('both')">Ambos</button>
+                        </div>
+                    </div>
+                    <div class="field"><label>Detalhe</label>
+                        <div class="seg">
+                            <button id="btnSimp" onclick="setDetail('simples')">Simples</button>
+                            <button id="btnComp" onclick="setDetail('completo')">Setas</button>
+                            <button id="btnCab" onclick="setDetail('cabos')">Cabos</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-header"><h2><i class="fas fa-bolt"></i> Energia & Peso</h2><span class="card-badge">230V</span></div>
-                <div class="power-grid"><div class="power-card"><div class="power-label">Potência/Tile</div><div class="power-value" id="powerPerTile">210</div><span style="font-size:0.8rem;color:var(--text-muted);">W</span></div><div class="power-card"><div class="power-label">Total Tiles</div><div class="power-value" id="totalTilesPower">60</div></div></div>
-                <div class="energy-box"><div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;text-align:center;"><div><div style="font-size:0.8rem;color:var(--text-muted);">Total Watts</div><div style="font-size:1.8rem;font-weight:700;color:var(--success);" id="totalPowerWatts">12.600</div></div><div><div style="font-size:0.8rem;color:var(--text-muted);">Total Amperes</div><div style="font-size:1.8rem;font-weight:700;color:var(--success);" id="totalAmps">54.8</div></div></div></div>
-                <div class="phase-grid"><div class="phase-item"><div class="power-label">L1</div><div class="phase-value" id="currentL1">18.3</div></div><div class="phase-item"><div class="power-label">L2</div><div class="phase-value" id="currentL2">18.3</div></div><div class="phase-item"><div class="power-label">L3</div><div class="phase-value" id="currentL3">18.3</div></div></div>
-                <div class="weight-box"><div style="text-align:center;margin-bottom:15px;font-weight:600;color:var(--text-primary);">Peso do Ledwall</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;"><div><div style="font-size:0.7rem;color:var(--text-muted);">Tile</div><div style="font-size:1.3rem;font-weight:700;color:var(--text-primary);">9</div><span style="font-size:0.7rem;color:var(--text-muted);">kg</span></div><div><div style="font-size:0.7rem;color:var(--text-muted);">Total</div><div style="font-size:1.3rem;font-weight:700;color:var(--text-primary);" id="totalWeight">540</div><span style="font-size:0.7rem;color:var(--text-muted);">kg</span></div><div><div style="font-size:0.7rem;color:var(--text-muted);">Ton</div><div style="font-size:1.3rem;font-weight:700;color:var(--text-primary);" id="totalWeightTons">0.54</div><span style="font-size:0.7rem;color:var(--text-muted);">t</span></div></div></div>
+                <div class="cells" id="chips"></div>
+                <canvas id="cv" width="1600" height="720"></canvas>
+                <div class="legend" id="legend"></div>
             </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2 class="section-title">Lista de Material — Picking List</h2>
+                    <button class="btn-pdf" onclick="generateDiagramPDF()">Exportar PDF (lista + sinal + power)</button>
+                </div>
+                <table>
+                    <thead><tr><th style="width:56px">Tipo</th><th>Item</th><th style="width:150px">Quantidade</th><th>Descrição / Regra</th></tr></thead>
+                    <tbody id="bom"></tbody>
+                </table>
+            </div>
+
+            <div class="footer">Copyright©2026 — All Rights Reserved — Nelson Teixeira</div>
         </div>
 
-        <div class="stock-table">
-            <h3><i class="fas fa-boxes"></i> Stock Disponível - P2.6mm INDOOR</h3>
-            <table>
-                <thead><tr><th>Marca</th><th>Modelo</th><th>Stock</th><th>Necessário</th><th>Status</th></tr></thead>
-                <tbody>
-                    <tr><td><strong>Unillumin</strong></td><td>UPADIII</td><td>80</td><td id="neededTiles">60</td><td id="unilluminStatus" class="status-available">✅ Disponível</td></tr>
-                    <tr><td><strong>Prolight</strong></td><td>Omegapix 26B</td><td>240</td><td id="neededTiles2">60</td><td id="omegapixStatus" class="status-available">✅ Disponível</td></tr>
-                    <tr><td><strong>Traulux</strong></td><td>T-Rent Reto</td><td>440</td><td id="neededTiles3">60</td><td id="trauluxRetoStatus" class="status-available">✅ Disponível</td></tr>
-                    <tr><td><strong>Traulux</strong></td><td>T-Rent FLEX</td><td>160</td><td id="neededTiles4">60</td><td id="trauluxFlexStatus" class="status-available">✅ Disponível</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="footer-app">
-            <span>Smartchoice©2026 - All rights reserved</span>
-            <span>Smartchoice LED Calculator by Nelson Teixeira</span>
-        </div>
+        <div class="footer-app">Copyright©2026 — All Rights Reserved — Nelson Teixeira</div>
     </div>
 
     <script>
+        // ================= CALCULADORA =================
         const BRAND_STOCK = { unillumin:{name:'Unillumin',model:'UPADIII',stock:80,power:160}, omegapix:{name:'Prolight',model:'Omegapix 26B',stock:240,power:160}, 'traulux-reto':{name:'Traulux',model:'T-Rent Reto',stock:440,power:210}, 'traulux-flex':{name:'Traulux',model:'T-Rent FLEX',stock:160,power:210} };
         let selectedBrand = 'unillumin';
         const CONTROLLERS = { novastar4k:{maxTiles:128}, novastarR5:{maxTiles:64}, mx40pro:{maxTiles:160} };
         const TILE_WEIGHT_KG = 9;
 
-        function selectBrand(b) { 
-            selectedBrand=b; 
-            document.querySelectorAll('.brand-card').forEach(e=>e.classList.remove('selected')); 
-            document.getElementById('brand'+{unillumin:'Unillumin',omegapix:'Omegapix','traulux-reto':'TrauluxReto','traulux-flex':'TrauluxFlex'}[b]).classList.add('selected'); 
-            document.getElementById('selectedBrand').textContent=BRAND_STOCK[b].name+' '+BRAND_STOCK[b].model; 
-            updateAll(); 
+        function selectBrand(b) {
+            selectedBrand=b;
+            document.querySelectorAll('.brand-card').forEach(e=>e.classList.remove('selected'));
+            document.getElementById('brand'+{unillumin:'Unillumin',omegapix:'Omegapix','traulux-reto':'TrauluxReto','traulux-flex':'TrauluxFlex'}[b]).classList.add('selected');
+            document.getElementById('selectedBrand').textContent=BRAND_STOCK[b].name+' '+BRAND_STOCK[b].model;
+            updateAll();
         }
 
         function updateAll() {
             let w=parseFloat(document.getElementById('width').value)||5, h=parseFloat(document.getElementById('height').value)||3;
             let tw=Math.ceil((w*1000)/500), th=Math.ceil((h*1000)/500), tt=tw*th;
             let rw=tw*192, rh=th*192;
-            
+
             document.getElementById('liveResolution').textContent=rw+' x '+rh;
             document.getElementById('totalArea').textContent=(w*h).toFixed(1)+' m²';
             document.getElementById('totalTilesResult').textContent=tt;
             document.getElementById('totalWeightResult').textContent=(tt*TILE_WEIGHT_KG)+' kg';
-            
+
             let canvas=document.getElementById('ledCanvas');
             if(canvas){
                 let ctx=canvas.getContext('2d');
@@ -208,34 +346,34 @@
                 document.getElementById('canvasHeight').textContent=h.toFixed(1)+'m';
                 document.getElementById('canvasTiles').textContent=tt+' tiles';
             }
-            
+
             ['neededTiles','neededTiles2','neededTiles3','neededTiles4'].forEach(id=>document.getElementById(id).textContent=tt);
             let keys=['unillumin','omegapix','traulux-reto','traulux-flex'], stocks=['unilluminStatus','omegapixStatus','trauluxRetoStatus','trauluxFlexStatus'];
             stocks.forEach((id,i)=>{let el=document.getElementById(id);if(tt<=BRAND_STOCK[keys[i]].stock){el.innerHTML='✅ Disponível';el.className='status-available';}else{el.innerHTML='⚠️ Insuficiente';el.className='status-insufficient';}});
-            
+
             let u4=Math.max(1,Math.ceil(tt/128)), uR5=Math.max(1,Math.ceil(tt/64)), uMX=Math.max(1,Math.ceil(tt/160));
             document.getElementById('novastar4kUnits').textContent=u4;
             document.getElementById('novastarR5Units').textContent=uR5;
             document.getElementById('mx40proUnits').textContent=uMX;
-            
+
             let ctrls=[{id:'novastar4k',u:u4,m:128},{id:'novastarR5',u:uR5,m:64},{id:'mx40pro',u:uMX,m:160}];
             ctrls.sort((a,b)=>a.u-b.u||b.m-a.m);
             let best=ctrls[0].id;
-            
+
             ['ctrl-novastar4k','ctrl-novastarR5','ctrl-mx40pro'].forEach(id=>{let el=document.getElementById(id);if(el)el.classList.remove('recommended');});
             document.getElementById('ctrl-'+best).classList.add('recommended');
-            
+
             ['novastar4kRecommended','novastarR5Recommended','mx40proRecommended'].forEach(id=>{document.getElementById(id).textContent='';document.getElementById(id).className='controller-badge';});
             document.getElementById(best+'Recommended').textContent='RECOMENDADO';
             document.getElementById(best+'Recommended').className='controller-badge recommended';
-            
+
             ['novastar4k','novastarR5','mx40pro'].forEach(id=>{
                 if(id===best)return;
                 let el=document.getElementById(id+'Recommended'), u=id==='novastar4k'?u4:id==='novastarR5'?uR5:uMX;
                 if(id==='novastarR5'&&u>4){el.textContent='NÃO RECOMENDADO';el.className='controller-badge not-rec';}
                 else{el.textContent=id==='mx40pro'?'PREMIUM':'ALTERNATIVA';el.className='controller-badge '+(id==='mx40pro'?'premium':'alternative');}
             });
-            
+
             let p=BRAND_STOCK[selectedBrand]?.power||210, totW=tt*p;
             document.getElementById('powerPerTile').textContent=p;
             document.getElementById('totalTilesPower').textContent=tt;
@@ -259,14 +397,13 @@
                 let d = new Date();
                 let pageW = 210, pageH = 297, m = 15;
                 let y = m;
-                
-                // CABEÇALHO
+
                 pdf.setFillColor(30, 30, 30); pdf.rect(0, 0, pageW, 28, "F");
                 pdf.setFontSize(18); pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold");
                 pdf.text("SmartChoice LED Calculator", m, 14);
                 pdf.setFontSize(8); pdf.setTextColor(180, 180, 180); pdf.setFont("helvetica", "normal");
                 pdf.text("Relatorio Tecnico - " + d.toLocaleDateString("pt-PT") + " " + d.toLocaleTimeString("pt-PT"), m, 22);
-                
+
                 y = 38;
                 let w = document.getElementById("width").value;
                 let h = document.getElementById("height").value;
@@ -275,13 +412,12 @@
                 let tt = tw * th;
                 let rw = tw * 192;
                 let rh = th * 192;
-                
-                // TABELA DE DIMENSÕES
+
                 pdf.setDrawColor(80, 80, 80); pdf.setLineWidth(0.3);
                 pdf.setFontSize(11); pdf.setTextColor(50, 50, 50); pdf.setFont("helvetica", "bold");
                 pdf.text("DIMENSOES DO LED", m, y); y += 5;
                 pdf.line(m, y, pageW - m, y); y += 6;
-                
+
                 pdf.setFont("helvetica", "normal"); pdf.setFontSize(10);
                 let dados = [
                     ["Comprimento", w + " m"], ["Altura", h + " m"],
@@ -295,8 +431,7 @@
                     y += 6;
                 });
                 y += 4;
-                
-                // TABELA DE ENERGIA
+
                 pdf.setFontSize(11); pdf.setTextColor(50, 50, 50); pdf.setFont("helvetica", "bold");
                 pdf.text("ENERGIA", m, y); y += 5;
                 pdf.line(m, y, pageW - m, y); y += 6;
@@ -309,8 +444,7 @@
                     y += 6;
                 });
                 y += 4;
-                
-                // TABELA DE CONTROLADORES
+
                 pdf.setFontSize(11); pdf.setTextColor(50, 50, 50); pdf.setFont("helvetica", "bold");
                 pdf.text("CONTROLADORES", m, y); y += 5;
                 pdf.line(m, y, pageW - m, y); y += 6;
@@ -323,8 +457,7 @@
                     pdf.setFont("helvetica", "normal"); pdf.setTextColor(80, 80, 80); pdf.text(units + " unidades - " + tag, m + 90, y);
                     y += 6;
                 });
-                
-                // GRELHA VISUAL (desenhada com linhas)
+
                 y += 6;
                 pdf.setFontSize(10); pdf.setTextColor(50, 50, 50); pdf.setFont("helvetica", "bold");
                 pdf.text("CONFIGURACAO VISUAL: " + tw + " x " + th + " tiles", m, y); y += 4;
@@ -339,22 +472,915 @@
                 pdf.text(tw + " tiles", gridX + gridW/2, gridY - 2, { align: "center" });
                 pdf.text(th + " tiles", gridX + gridW + 3, gridY + gridH/2 + 2);
                 y = gridY + gridH + 10;
-                
-                // FOOTER
+
                 pdf.setDrawColor(60, 60, 60); pdf.setLineWidth(0.5);
                 pdf.line(m, pageH - 18, pageW - m, pageH - 18);
                 pdf.setFontSize(7); pdf.setTextColor(120, 120, 120);
                 pdf.text("Smartchoice (c)2026 - All rights reserved", m, pageH - 12);
                 pdf.text("Smartchoice LED Calculator by Nelson Teixeira", pageW - m, pageH - 12, { align: "right" });
-                
+
                 pdf.save("SmartChoice-LED-Report.pdf");
             }catch(e){alert("Erro: " + e.message);}
         }
+
+        // ================= NAVEGAÇÃO =================
+        function showView(v) {
+            const isDiagram = v === 'diagram';
+            document.getElementById('pageCalc').style.display = isDiagram ? 'none' : 'block';
+            document.getElementById('pageDiagram').style.display = isDiagram ? 'block' : 'none';
+            document.getElementById('btnPdfCalc').style.display = isDiagram ? 'none' : 'flex';
+            document.getElementById('navCalc').className = 'btn' + (isDiagram ? '' : ' active');
+            document.getElementById('navDiagram').className = 'btn' + (isDiagram ? ' active' : '');
+            document.getElementById('appRoot').classList.toggle('wide', isDiagram);
+            if (isDiagram) diagDraw();
+        }
+
+        // ================= DIAGRAMA DE MONTAGEM =================
+        const DIAG_CFG = {
+            tilesPerPortCap: 16,
+            tilesPerChainPwrCap: 16,
+            circuitsPerSocapex: 6,
+            stackEveryCols: 3,
+            pesosPerMeter: 2,
+            garrasPerStack: 2,
+            quadroOptions: [32, 63, 125], marginQuadro: 0.8,
+            gapTiles: 1
+        };
+        const DIAG_CTRLS = {
+            mctrl4k: { name: 'MCTRL 4K', ports: 16, maxTiles: 128 },
+            mx40pro: { name: 'MX40 PRO', ports: 20, maxTiles: 160 },
+            r5:      { name: 'MCTRL R5', ports: 8,  maxTiles: 64 }
+        };
+        const DIAG_BRANDS = {
+            unillumin: { name: 'Unillumin UPADIII', power: 160, perBox: 6 },
+            omegapix:  { name: 'Prolight Omegapix 26B', power: 160, perBox: 8 },
+            reto:      { name: 'Traulux T-Rent Reto', power: 210, perBox: 8 },
+            flex:      { name: 'Traulux T-Rent FLEX', power: 210, perBox: 8 }
+        };
+        const DIAG_PAL = [
+            '#7dd3fc','#fca5a5','#86efac','#fcd34d','#c4b5fd','#67e8f9',
+            '#f9a8d4','#bef264','#fdba74','#a5b4fc','#5eead4','#fde68a',
+            '#d8b4fe','#99f6e4','#fecaca','#bfdbfe'
+        ];
+        let diagSections = [{ w: 20, h: 3 }];
+        let diagLayer = 'sig';
+        let diagDetail = 'simples';
+        let diagZoom = 1;
+        let diagPanX = 0, diagPanY = 0;
+
+        function setLayer(l) {
+            diagLayer = l;
+            const m = { sig: 'on-sig', pwr: 'on-pwr', both: 'on-both' };
+            ['btnSig','btnPwr','btnBoth'].forEach(id => document.getElementById(id).className = '');
+            document.getElementById({ sig:'btnSig', pwr:'btnPwr', both:'btnBoth' }[l]).className = m[l];
+            diagDraw();
+        }
+        function setDetail(d) {
+            diagDetail = d;
+            ['btnSimp','btnComp','btnCab'].forEach(id => document.getElementById(id).className = '');
+            document.getElementById({ simples:'btnSimp', completo:'btnComp', cabos:'btnCab' }[d]).className = 'on-neutral';
+            diagDraw();
+        }
+        function zoomBy(f) {
+            diagZoom = Math.min(6, Math.max(0.25, diagZoom * f));
+            document.getElementById('zoomD').value = diagZoom;
+            diagDraw();
+        }
+        function loadPreset(k) {
+            if (k === 'simples') diagSections = [{ w: 20, h: 3 }];
+            else diagSections = [{ w: 1, h: 3 }, { w: 2, h: 4 }, { w: 8, h: 4.5 }, { w: 2, h: 4 }, { w: 1, h: 3 }];
+            diagZoom = 1; diagPanX = 0; diagPanY = 0;
+            document.getElementById('zoomD').value = 1;
+            renderSections();
+            diagDraw();
+        }
+        function addSection() {
+            diagSections.push({ w: 2, h: 3 });
+            renderSections();
+            diagDraw();
+        }
+        function removeSection(i) {
+            if (diagSections.length <= 1) { diagSections = [{ w: 5, h: 3 }]; }
+            else diagSections.splice(i, 1);
+            renderSections();
+            diagDraw();
+        }
+        function renderSections() {
+            const el = document.getElementById('sectionsEditor');
+            el.innerHTML = diagSections.map((s, i) => {
+                const tw = Math.ceil((Math.max(0.5, s.w || 1) * 1000) / 500);
+                const th = Math.ceil((Math.max(0.5, s.h || 1) * 1000) / 500);
+                return '<div class="sec-row">' +
+                    '<span class="sidx">SEC ' + (i + 1) + '</span>' +
+                    '<label class="x">L</label><input type="number" step="0.1" min="0.5" value="' + s.w + '" onchange="editSection(' + i + ',\'w\',this.value)">' +
+                    '<label class="x">× A</label><input type="number" step="0.1" min="0.5" value="' + s.h + '" onchange="editSection(' + i + ',\'h\',this.value)">' +
+                    '<span class="x">m</span>' +
+                    '<span class="sinfo">' + tw + ' × ' + th + ' tiles · ' + (tw * th) + ' un</span>' +
+                    '<button class="sec-del" onclick="removeSection(' + i + ')" title="Remover secção">✕</button>' +
+                    '</div>';
+            }).join('');
+        }
+        function editSection(i, k, v) {
+            const n = parseFloat(v);
+            diagSections[i][k] = isNaN(n) ? 0.5 : Math.max(0.5, n);
+            renderSections();
+            diagDraw();
+        }
+
+        function signalChainTiles(th) {
+            let cols = Math.floor(DIAG_CFG.tilesPerPortCap / th);
+            if (cols < 2 && th >= 9) cols = 2;
+            if (cols < 1) cols = 1;
+            return cols * th;
+        }
+
+        function diagCompute() {
+            const brand = DIAG_BRANDS[document.getElementById('brandD').value] || DIAG_BRANDS.reto;
+            const redun = document.getElementById('redunD').checked;
+            const ctrl = DIAG_CTRLS[document.getElementById('ctrlD').value];
+
+            const secs = diagSections.map((s) => {
+                const w = Math.max(0.5, s.w || 1), h = Math.max(0.5, s.h || 1);
+                const tw = Math.ceil(w * 1000 / 500), th = Math.ceil(h * 1000 / 500), tt = tw * th;
+                const perSig = Math.min(signalChainTiles(th), tt);
+                const chains = Math.ceil(tt / perSig);
+                const stackCols = Math.max(1, Math.ceil(tw / DIAG_CFG.stackEveryCols));
+                const stackRows = Math.max(1, Math.ceil(h));
+                const stacks = stackCols * stackRows;
+                return {
+                    w, h, tw, th, tt, perSig, chains,
+                    watts: tt * brand.power,
+                    stacks,
+                    pesosCount: stackCols * DIAG_CFG.pesosPerMeter * stackRows,
+                    frames: tw,
+                    garras: stacks * DIAG_CFG.garrasPerStack,
+                    caixas: Math.ceil(tt / brand.perBox)
+                };
+            });
+
+            const tt = secs.reduce((a, s) => a + s.tt, 0);
+            secs.forEach(s => {
+                s.perPwr = Math.min(s.perSig, s.tt);
+                s.chainsPwr = Math.ceil(s.tt / s.perPwr);
+            });
+            const maxCircuitAmps = Math.max(...secs.map(s => s.perPwr * brand.power / 230));
+            const warnOver16 = maxCircuitAmps > 16 + 1e-6;
+
+            const chainsMain = secs.reduce((a, s) => a + s.chains, 0);
+            const portsMain = chainsMain;
+            const portsBackup = redun ? chainsMain : 0;
+            const portsTotal = portsMain + portsBackup;
+
+            let units = Math.max(1, Math.ceil(portsTotal / ctrl.ports), Math.ceil(tt / ctrl.maxTiles));
+            let chainsPerUnit;
+            for (;;) {
+                const base = Math.floor(chainsMain / units);
+                const rem = chainsMain % units;
+                const arr = [];
+                for (let i = 0; i < units; i++) arr.push(base + (i < rem ? 1 : 0));
+                if (arr.every(n => (redun ? 2 * n : n) <= ctrl.ports)) { chainsPerUnit = arr; break; }
+                units++;
+            }
+            const capacityWarn = tt > units * ctrl.maxTiles;
+
+            const chainTiles = [];
+            secs.forEach(s => { for (let c = 0; c < s.chains; c++) chainTiles.push(Math.max(0, Math.min(s.perSig, s.tt - c * s.perSig))); });
+            const chainSec = [];
+            secs.forEach((s, si) => { for (let c = 0; c < s.chains; c++) chainSec.push(si); });
+
+            const tilesPerUnit = [];
+            let idx = 0;
+            for (let u = 0; u < units; u++) {
+                let t = 0;
+                for (let i = 0; i < chainsPerUnit[u]; i++) { t += chainTiles[idx]; idx++; }
+                tilesPerUnit.push(t);
+            }
+
+            const chainsPwr = secs.reduce((a, s) => a + s.chainsPwr, 0);
+            const socapex = Math.ceil(chainsPwr / DIAG_CFG.circuitsPerSocapex);
+            const polvos = socapex;
+            const watts = secs.reduce((a, s) => a + s.watts, 0);
+            const ampsTotal = watts / 230;
+
+            // distribuição de fases: cada polvo tem 2 CE por fase (CE1+2=L1, CE3+4=L2, CE5+6=L3)
+            const pwrCircuits = [];
+            secs.forEach((s, si) => {
+                for (let c = 0; c < s.chainsPwr; c++) {
+                    const tiles = Math.max(0, Math.min(s.perPwr, s.tt - c * s.perPwr));
+                    const wattsC = tiles * brand.power;
+                    pwrCircuits.push({ si, c, tiles, amps: wattsC / 230 });
+                }
+            });
+            const phaseLoads = [0, 0, 0];
+            const phaseCount = [0, 0, 0];
+            const assign = pwrCircuits.map(() => ({ polvo: -1, phase: -1 }));
+            const sortedIdx = pwrCircuits.map((_, i) => i).sort((a, b) => pwrCircuits[b].amps - pwrCircuits[a].amps);
+            sortedIdx.forEach(ci => {
+                const ph = [0, 1, 2]
+                    .filter(p => phaseCount[p] < 2 * socapex)
+                    .sort((a, b) => phaseLoads[a] - phaseLoads[b])[0];
+                phaseCount[ph]++;
+                phaseLoads[ph] += pwrCircuits[ci].amps;
+                assign[ci].phase = ph;
+            });
+            const target = Math.ceil(pwrCircuits.length / socapex);
+            const pool = [[], [], []];
+            assign.forEach((a, ci) => pool[a.phase].push(ci));
+            for (let p = 0; p < socapex; p++) {
+                let filled = 0;
+                const phOrder = [0, 1, 2].sort((x, y) => pool[y].length - pool[x].length);
+                for (const ph of phOrder) {
+                    const n = Math.min(2, pool[ph].length, target - filled);
+                    for (let k = 0; k < n; k++) {
+                        const ci = pool[ph].shift();
+                        assign[ci].polvo = p;
+                        filled++;
+                    }
+                }
+            }
+            let pOver = 0;
+            [0, 1, 2].forEach(ph => {
+                while (pool[ph].length) {
+                    const ci = pool[ph].shift();
+                    assign[ci].polvo = pOver % socapex;
+                    pOver++;
+                }
+            });
+            for (let p = 0; p < socapex; p++) {
+                const cs = [];
+                assign.forEach((a, ci) => { if (a.polvo === p) cs.push(ci); });
+                cs.sort((x, y) => assign[x].phase - assign[y].phase || x - y);
+                cs.forEach((ci, i) => { assign[ci].slot = i + 1; });
+            }
+            const maxPhaseAmps = Math.max(...phaseLoads);
+            let quadro = DIAG_CFG.quadroOptions.find(q => q * DIAG_CFG.marginQuadro >= maxPhaseAmps) || null;
+
+            const totals = {
+                frames: secs.reduce((a, s) => a + s.frames, 0),
+                stacks: secs.reduce((a, s) => a + s.stacks, 0),
+                pesosCount: secs.reduce((a, s) => a + s.pesosCount, 0),
+                garras: secs.reduce((a, s) => a + s.garras, 0),
+                caixas: secs.reduce((a, s) => a + s.caixas, 0)
+            };
+            const maxTh = Math.max(...secs.map(s => s.th));
+            const totalTw = secs.reduce((a, s) => a + s.tw, 0) + DIAG_CFG.gapTiles * (secs.length - 1);
+
+            return { secs, tt, chainsMain, chainTiles, chainSec, portsMain, portsBackup, portsTotal,
+                units, chainsPerUnit, tilesPerUnit, ctrl, capacityWarn, chainsPwr, socapex, polvos,
+                watts, ampsTotal, phaseLoads, maxPhaseAmps, assign, quadro, totals, redun, brand, maxTh, totalTw,
+                maxCircuitAmps, warnOver16 };
+        }
+
+        function wiringOrder(tw, th) {
+            const pos = [];
+            for (let i = 0; i < tw * th; i++) {
+                const col = Math.floor(i / th);
+                const r = i % th;
+                const row = (col % 2 === 0) ? (th - 1 - r) : r;
+                pos.push({ row, col });
+            }
+            return pos;
+        }
+
+        function powerFlowHeight(d) {
+            return 82 + d.socapex * 40 + 24;
+        }
+
+        function dcol(c) { return DIAG_PAL[c % DIAG_PAL.length]; }
+
+        function diagDraw() {
+            const d = diagCompute();
+            const cv = document.getElementById('cv');
+            const ctx = cv.getContext('2d');
+            ctx.clearRect(0, 0, cv.width, cv.height);
+
+            ctx.strokeStyle = 'rgba(0,0,0,0.07)';
+            ctx.lineWidth = 1;
+            for (let gx = 0; gx < cv.width; gx += 26) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cv.height); ctx.stroke(); }
+            for (let gy = 0; gy < cv.height; gy += 26) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cv.width, gy); ctx.stroke(); }
+
+            ctx.save();
+            ctx.translate(cv.width / 2 + diagPanX, cv.height / 2 + diagPanY);
+            ctx.scale(diagZoom, diagZoom);
+            ctx.translate(-cv.width / 2, -cv.height / 2);
+
+            if (diagLayer === 'both') {
+                ctx.strokeStyle = '#4A443A'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(800, 20); ctx.lineTo(800, 700); ctx.stroke();
+                diagDrawHalf(ctx, d, 0, 798, 'sig');
+                diagDrawHalf(ctx, d, 802, 1600, 'pwr');
+            } else if (diagLayer === 'sig') {
+                diagDrawHalf(ctx, d, 0, 1600, 'sig');
+            } else {
+                diagDrawHalf(ctx, d, 0, 1600, 'pwr');
+            }
+
+            ctx.restore();
+
+            diagBuildChips(d);
+            diagBuildLegend(d);
+            diagBuildBom(d);
+        }
+
+        function diagDrawHalf(ctx, d, x0, x1, type) {
+            const H = 720;
+            ctx.save();
+            ctx.beginPath(); ctx.rect(x0, 0, x1 - x0, H); ctx.clip();
+
+            const halfPorts = d.ctrl.ports / 2;
+            const gridW = halfPorts * 15;
+            const unitW = gridW + 44, unitH = 78, gapU = 10;
+            const unitsPerRow = Math.max(1, Math.floor((x1 - x0 - 40) / (unitW + gapU)));
+            const rowsU = Math.ceil(d.units / unitsPerRow);
+
+            let wallLeft, wallRight, bottomReserve;
+            if (type === 'sig') {
+                wallLeft = x0 + 40; wallRight = x1 - 40;
+                bottomReserve = rowsU * (unitH + gapU) + 30;
+            } else {
+                wallLeft = x0 + 40; wallRight = x1 - 40;
+                bottomReserve = powerFlowHeight(d);
+            }
+            const top = 84;
+            const tilePx = Math.min(34, (wallRight - wallLeft) / d.totalTw, (H - top - bottomReserve) / d.maxTh);
+            const wx = wallLeft, wy = top;
+            const hPx = d.maxTh * tilePx;
+
+            ctx.textAlign = 'left';
+            ctx.fillStyle = type === 'sig' ? '#E3A857' : '#8FAE8B';
+            ctx.font = '500 18px Consolas';
+            ctx.fillText(type === 'sig' ? 'SINAL' : 'POWER', x0 + 24, 32);
+            ctx.fillStyle = '#4E483D';
+            ctx.font = '400 13.5px Consolas';
+            ctx.fillText(type === 'sig'
+                ? d.portsMain + ' main + ' + d.portsBackup + ' backup · ' + d.units + '× ' + d.ctrl.name + ' · ' + d.tilesPerUnit.join('/') + ' tiles'
+                : d.chainsPwr + ' circuitos CE · ' + d.socapex + ' socapex · ' + d.polvos + ' polvos · quadro ' + (d.quadro ? d.quadro + 'A' : '>125A'), x0 + 24, 50);
+
+            const secLayout = [];
+            let accX = 0;
+            d.secs.forEach((s, si) => {
+                secLayout.push({
+                    si,
+                    x: wx + accX * tilePx,
+                    y: wy + (d.maxTh - s.th) * tilePx,
+                    w: s.tw * tilePx,
+                    h: s.th * tilePx,
+                    tw: s.tw, th: s.th
+                });
+                accX += s.tw + DIAG_CFG.gapTiles;
+            });
+            const chainsOffsetSig = [];
+            const chainsOffsetPwr = [];
+            let accC = 0, accP = 0;
+            d.secs.forEach(s => { chainsOffsetSig.push(accC); accC += s.chains; chainsOffsetPwr.push(accP); accP += s.chainsPwr; });
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            d.secs.forEach((s, si) => {
+                const L = secLayout[si];
+                const pos = wiringOrder(s.tw, s.th);
+                ctx.fillStyle = 'rgba(0,0,0,0.32)';
+                ctx.fillRect(L.x - 8, L.y - 8, L.w + 16, L.h + 16);
+                ctx.strokeStyle = 'rgba(201,106,90,0.55)';
+                ctx.lineWidth = 1.2;
+                ctx.strokeRect(L.x - 8 + 0.5, L.y - 8 + 0.5, L.w + 15, L.h + 15);
+                ctx.fillStyle = '#57503F';
+                ctx.font = '500 11px Consolas';
+                ctx.fillText('S' + (si + 1) + ' · ' + s.w + 'm × ' + s.h + 'm · ' + s.tt + ' tiles', L.x + L.w / 2, L.y - 16);
+
+                const per = type === 'sig' ? s.perSig : s.perPwr;
+                const nSecChains = type === 'sig' ? s.chains : s.chainsPwr;
+                const offs = type === 'sig' ? chainsOffsetSig : chainsOffsetPwr;
+                for (let i = 0; i < s.tt; i++) {
+                    const p = pos[i];
+                    const x = L.x + p.col * tilePx, y = L.y + p.row * tilePx;
+                    const gChain = offs[si] + Math.floor(i / per);
+                    ctx.fillStyle = dcol(gChain);
+                    ctx.globalAlpha = 0.88;
+                    ctx.fillRect(x + 1, y + 1, tilePx - 2, tilePx - 2);
+                    ctx.globalAlpha = 1;
+                    ctx.font = '500 ' + Math.max(9, Math.min(14, tilePx * 0.62)) + 'px Consolas';
+                    ctx.fillStyle = '#1A1815';
+                    ctx.fillText(String(gChain + 1), x + tilePx / 2, y + tilePx / 2 + 0.5);
+                }
+
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                for (let c = 0; c < nSecChains; c++) {
+                    const start = c * per;
+                    const end = Math.min(start + per, s.tt);
+                    const startC = L.x + pos[start].col * tilePx + tilePx / 2;
+                    const startY = L.y + pos[start].row * tilePx + tilePx / 2;
+                    ctx.beginPath();
+                    ctx.moveTo(startC, startY);
+                    for (let i = start + 1; i < end; i++) {
+                        ctx.lineTo(L.x + pos[i].col * tilePx + tilePx / 2, L.y + pos[i].row * tilePx + tilePx / 2);
+                    }
+                    ctx.strokeStyle = 'rgba(26,24,21,0.3)';
+                    ctx.lineWidth = 2.2;
+                    ctx.stroke();
+                    diagCircleMarker(ctx, startC, startY, tilePx);
+                    if (type === 'sig' && d.redun) {
+                        const e = end - 1;
+                        diagCircleMarker(ctx, L.x + pos[e].col * tilePx + tilePx / 2, L.y + pos[e].row * tilePx + tilePx / 2, tilePx);
+                    }
+                    if (diagDetail !== 'simples') {
+                        for (let i = start; i < end - 1; i++) {
+                            const ax = L.x + pos[i].col * tilePx + tilePx / 2, ay = L.y + pos[i].row * tilePx + tilePx / 2;
+                            const bx = L.x + pos[i + 1].col * tilePx + tilePx / 2, by = L.y + pos[i + 1].row * tilePx + tilePx / 2;
+                            const mx = (ax + bx) / 2, my = (ay + by) / 2;
+                            const ang = Math.atan2(by - ay, bx - ax);
+                            const ss = Math.max(3, tilePx * 0.2);
+                            ctx.fillStyle = 'rgba(26,24,21,0.55)';
+                            ctx.beginPath();
+                            ctx.moveTo(mx + Math.cos(ang) * ss, my + Math.sin(ang) * ss);
+                            ctx.lineTo(mx - Math.cos(ang - 0.5) * ss, my - Math.sin(ang - 0.5) * ss);
+                            ctx.lineTo(mx - Math.cos(ang + 0.5) * ss, my - Math.sin(ang + 0.5) * ss);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                    }
+                }
+            });
+
+            if (type === 'sig') {
+                const chainStart = [];
+                let acc = 0;
+                for (let u = 0; u < d.units; u++) { chainStart.push(acc); acc += d.chainsPerUnit[u]; }
+                for (let u = 0; u < d.units; u++) {
+                    const row = Math.floor(u / unitsPerRow);
+                    const rowUnits = Math.min(unitsPerRow, d.units - row * unitsPerRow);
+                    const rowW = rowUnits * (unitW + gapU) - gapU;
+                    const ux = (x0 + x1) / 2 - rowW / 2 + (u % unitsPerRow) * (unitW + gapU);
+                    const uy = wy + hPx + 30 + row * (unitH + gapU);
+                    ctx.fillStyle = '#1B1915';
+                    ctx.fillRect(ux, uy, unitW, unitH);
+                    ctx.strokeStyle = '#38342D'; ctx.lineWidth = 1; ctx.strokeRect(ux + 0.5, uy + 0.5, unitW - 1, unitH - 1);
+                    ctx.fillStyle = '#E7E2D6'; ctx.font = '500 11.5px Consolas'; ctx.textAlign = 'center';
+                    ctx.fillText(d.ctrl.name + ' · ' + (u + 1), ux + unitW / 2, uy + 15);
+                    ctx.fillStyle = '#6E675A'; ctx.font = '500 10px Consolas';
+                    ctx.fillText(d.chainsPerUnit[u] + ' circuitos · ' + d.tilesPerUnit[u] + ' tiles', ux + unitW / 2, uy + 29);
+                    ctx.strokeStyle = '#38342D';
+                    ctx.beginPath(); ctx.moveTo(ux + 12, uy + 34); ctx.lineTo(ux + unitW - 12, uy + 34); ctx.stroke();
+                    if (d.redun) {
+                        ctx.fillStyle = '#6E675A'; ctx.font = '500 8px Consolas'; ctx.textAlign = 'right';
+                        ctx.fillText('MAIN', ux + unitW / 2 - gridW / 2 - 6, uy + 44.5);
+                        ctx.fillText('BKUP', ux + unitW / 2 - gridW / 2 - 6, uy + 60.5);
+                    }
+                    for (let i = 0; i < halfPorts; i++) {
+                        const px = ux + unitW / 2 - gridW / 2 + 7.5 + i * 15;
+                        const chainIdx = chainStart[u] + i;
+                        const used = i < d.chainsPerUnit[u];
+                        diagDrawPort(ctx, px, uy + 44, used ? dcol(chainIdx) : '#14120E', used ? chainIdx + 1 : 0);
+                        if (d.redun) {
+                            diagDrawPort(ctx, px, uy + 60, used ? dcol(chainIdx) : '#14120E', used ? chainIdx + 1 : 0);
+                        } else {
+                            const chainIdx2 = chainStart[u] + halfPorts + i;
+                            const used2 = (halfPorts + i) < d.chainsPerUnit[u];
+                            diagDrawPort(ctx, px, uy + 60, used2 ? dcol(chainIdx2) : '#14120E', used2 ? chainIdx2 + 1 : 0);
+                        }
+                    }
+                }
+
+                if (diagDetail === 'cabos') {
+                    const busY = wy + hPx + 8;
+                    ctx.strokeStyle = 'rgba(74,68,58,0.6)';
+                    ctx.setLineDash([5, 5]); ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(wallLeft - 8, busY); ctx.lineTo(wallRight + 8, busY); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#4E483D'; ctx.font = '500 10px Consolas'; ctx.textAlign = 'left';
+                    ctx.fillText('calha de cabos rede 20m — main contínuo · backup tracejado', x0 + 20, busY + 14);
+                    for (let g = 0; g < d.chainsMain; g++) {
+                        const si = d.chainSec[g];
+                        const s = d.secs[si];
+                        const L = secLayout[si];
+                        const pos = wiringOrder(s.tw, s.th);
+                        const cInSec = g - chainsOffsetSig[si];
+                        const startIdx = cInSec * s.perSig;
+                        const tS = { x: L.x + pos[startIdx].col * tilePx + tilePx / 2, y: L.y + pos[startIdx].row * tilePx + tilePx / 2 };
+                        let u = 0;
+                        while (u < d.units - 1 && g >= chainStart[u + 1]) u++;
+                        const local = g - chainStart[u];
+                        const row = Math.floor(u / unitsPerRow);
+                        const rowUnits = Math.min(unitsPerRow, d.units - row * unitsPerRow);
+                        const rowW = rowUnits * (unitW + gapU) - gapU;
+                        const ux = (x0 + x1) / 2 - rowW / 2 + (u % unitsPerRow) * (unitW + gapU);
+                        const uy = wy + hPx + 30 + row * (unitH + gapU);
+                        const portRow = d.redun ? 0 : (local < halfPorts ? 0 : 1);
+                        const px = ux + unitW / 2 - gridW / 2 + 7.5 + (local % halfPorts) * 15;
+                        const py = uy + 44 + portRow * 16;
+                        ctx.strokeStyle = dcol(g);
+                        ctx.globalAlpha = 0.8; ctx.lineWidth = 1.4;
+                        ctx.beginPath();
+                        ctx.moveTo(px, py - 8);
+                        ctx.lineTo(px, busY);
+                        ctx.lineTo(tS.x, busY);
+                        ctx.lineTo(tS.x, tS.y + tilePx / 2);
+                        ctx.stroke();
+                        if (d.redun) {
+                            const endIdx = Math.min((cInSec + 1) * s.perSig, s.tt) - 1;
+                            const tE = { x: L.x + pos[endIdx].col * tilePx + tilePx / 2, y: L.y + pos[endIdx].row * tilePx + tilePx / 2 };
+                            ctx.globalAlpha = 0.6;
+                            ctx.setLineDash([4, 3]);
+                            ctx.beginPath();
+                            ctx.moveTo(px, py + 8);
+                            ctx.lineTo(px, busY + 6);
+                            ctx.lineTo(tE.x, busY + 6);
+                            ctx.lineTo(tE.x, tE.y + tilePx / 2);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                        }
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            } else {
+                const gap = 10;
+                const baseY = wy + hPx + 26;
+                const quadroX = x0 + 40;
+                ctx.fillStyle = '#1B1915';
+                ctx.fillRect(quadroX, baseY, 104, 64);
+                ctx.strokeStyle = '#38342D'; ctx.lineWidth = 1; ctx.strokeRect(quadroX + 0.5, baseY + 0.5, 103, 63);
+                ctx.fillStyle = '#4E483D'; ctx.font = '500 10px Consolas'; ctx.textAlign = 'center';
+                ctx.fillText('QUADRO ELÉTRICO', quadroX + 52, baseY + 13);
+                ctx.fillStyle = d.quadro ? '#E3A857' : '#C96A5A';
+                ctx.font = '500 18px Consolas';
+                ctx.fillText(d.quadro ? d.quadro + 'A' : '>125A', quadroX + 52, baseY + 33);
+                ctx.fillStyle = '#8FAE8B'; ctx.font = '500 8.5px Consolas';
+                ctx.fillText('L1 ' + d.phaseLoads[0].toFixed(1) + ' · L2 ' + d.phaseLoads[1].toFixed(1) + ' · L3 ' + d.phaseLoads[2].toFixed(1), quadroX + 52, baseY + 49);
+                ctx.fillStyle = '#4E483D'; ctx.font = '500 8px Consolas';
+                ctx.fillText('A/fase · máx 80%', quadroX + 52, baseY + 60);
+
+                const cePos = [];
+                const rowY0 = baseY + 82;
+                for (let s = 0; s < d.socapex; s++) {
+                    const ry = rowY0 + s * 40;
+                    const cs = [];
+                    d.assign.forEach((a, ci) => { if (a.polvo === s) cs.push({ ci, slot: a.slot, phase: a.phase }); });
+                    cs.sort((x, y) => x.slot - y.slot);
+                    ctx.fillStyle = '#6E675A';
+                    ctx.font = '500 14px Consolas';
+                    ctx.textAlign = 'center';
+                    const arrY = (s === 0) ? baseY + 64 : ry - 6;
+                    ctx.fillText('↓', quadroX + 52, arrY + (s === 0 ? 14 : 12));
+                    let fx = x0 + 40;
+                    ctx.fillStyle = '#1B1915';
+                    ctx.fillRect(fx, ry, 54, 26);
+                    ctx.strokeStyle = '#38342D'; ctx.strokeRect(fx + 0.5, ry + 0.5, 53, 25);
+                    ctx.fillStyle = '#A99BB8'; ctx.font = '500 11px Consolas'; ctx.textAlign = 'center';
+                    ctx.fillText('SOCA ' + (s + 1), fx + 27, ry + 16);
+                    fx += 54 + gap;
+                    ctx.fillStyle = '#6E675A'; ctx.font = '500 13px Consolas';
+                    ctx.fillText('›', fx - gap / 2, ry + 16.5);
+                    ctx.fillStyle = '#1B1915';
+                    ctx.fillRect(fx, ry, 52, 26);
+                    ctx.strokeStyle = '#475569'; ctx.strokeRect(fx + 0.5, ry + 0.5, 51, 25);
+                    ctx.fillStyle = '#A99BB8'; ctx.font = '500 11px Consolas'; ctx.textAlign = 'center';
+                    ctx.fillText('POLVO ' + (s + 1), fx + 26, ry + 16);
+                    fx += 52 + gap;
+                    cs.forEach((x, k) => {
+                        if (k > 0) {
+                            ctx.fillStyle = '#6E675A'; ctx.font = '500 13px Consolas'; ctx.textAlign = 'center';
+                            ctx.fillText('›', fx - gap / 2, ry + 15.5);
+                        }
+                        cePos[x.ci] = { x: fx, y: ry, w: 46, h: 22 };
+                        ctx.fillStyle = dcol(x.ci);
+                        ctx.fillRect(fx, ry + 2, 46, 22);
+                        ctx.fillStyle = '#1A1815'; ctx.font = '500 9px Consolas';
+                        ctx.fillText('CE ' + x.slot + '·L' + (x.phase + 1), fx + 23, ry + 15.5);
+                        fx += 46 + gap;
+                    });
+                }
+
+                if (diagDetail === 'cabos') {
+                    const busY = wy + hPx + 8;
+                    ctx.strokeStyle = 'rgba(74,68,58,0.6)';
+                    ctx.setLineDash([5, 5]); ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(wallLeft - 8, busY); ctx.lineTo(wallRight + 8, busY); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = '#4E483D'; ctx.font = '500 10px Consolas'; ctx.textAlign = 'left';
+                    ctx.fillText('calha PowerCon CE 10m', x0 + 20, busY + 14);
+                    let pIdx = 0;
+                    d.secs.forEach((s, si) => {
+                        const L = secLayout[si];
+                        const pos = wiringOrder(s.tw, s.th);
+                        for (let c = 0; c < s.chainsPwr; c++) {
+                            const g = pIdx++;
+                            const startIdx = c * s.perPwr;
+                            const t = { x: L.x + pos[startIdx].col * tilePx + tilePx / 2, y: L.y + pos[startIdx].row * tilePx + tilePx / 2 };
+                            const cp = cePos[g];
+                            ctx.strokeStyle = dcol(g);
+                            ctx.globalAlpha = 0.8;
+                            ctx.lineWidth = 1.4;
+                            ctx.setLineDash([4, 3]);
+                            ctx.beginPath();
+                            ctx.moveTo(cp.x + cp.w / 2, cp.y + 2);
+                            ctx.lineTo(cp.x + cp.w / 2, busY);
+                            ctx.lineTo(t.x, busY);
+                            ctx.lineTo(t.x, t.y + tilePx / 2);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                            ctx.globalAlpha = 1;
+                        }
+                    });
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function diagDrawPort(ctx, x, y, fill, label) {
+            ctx.fillStyle = fill;
+            ctx.fillRect(x - 7, y - 7, 14, 14);
+            ctx.strokeStyle = label ? 'rgba(26,24,21,0.5)' : '#4A443A';
+            ctx.lineWidth = 1; ctx.strokeRect(x - 6.5, y - 6.5, 13, 13);
+            if (label) {
+                ctx.fillStyle = '#1A1815'; ctx.font = '500 8.5px Consolas'; ctx.textAlign = 'center';
+                ctx.fillText(String(label), x, y + 0.5);
+            }
+        }
+
+        function diagCircleMarker(ctx, x, y, tilePx) {
+            const r = Math.min(9, tilePx / 2 - 1);
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(231,226,214,0.85)'; ctx.lineWidth = 1; ctx.stroke();
+        }
+
+        function diagBuildChips(d) {
+            const cell = (cls, k, v) => '<span class="cell ' + cls + '"><span class="k">' + k + '</span><span class="v">' + v + '</span></span>';
+            const secTxt = d.secs.map((s, i) => 'S' + (i + 1) + ':' + s.w + '×' + s.h).join(' · ');
+            let html = cell('', 'Config', secTxt);
+            html += cell('', 'Tiles', d.tt + ' un · ' + d.totals.caixas + ' caixas');
+            html += cell('a', 'Sinal', d.portsMain + ' main + ' + d.portsBackup + ' bkup');
+            html += cell('a', 'Unidades', d.units + '× ' + d.ctrl.name + ' · ' + d.tilesPerUnit.join('/') + ' t');
+            if (d.capacityWarn) html += cell('r', 'Aviso', d.tt + ' > ' + d.units + '×' + d.ctrl.maxTiles);
+            html += cell('g', 'Power', d.chainsPwr + ' circuitos CE · ' + d.socapex + ' soca · ' + d.polvos + ' polvo');
+            if (d.warnOver16) html += cell('r', 'Aviso', d.maxCircuitAmps.toFixed(1) + ' A/circuito > 16A');
+            html += cell('', 'Quadro', (d.quadro ? d.quadro + 'A' : '>125A') + ' · L1 ' + d.phaseLoads[0].toFixed(1) + ' / L2 ' + d.phaseLoads[1].toFixed(1) + ' / L3 ' + d.phaseLoads[2].toFixed(1) + ' A');
+            html += cell('', 'Estrutura', d.totals.caixas + ' caixas · ' + d.totals.stacks + ' stacks · ' + d.totals.pesosCount + ' pesos · ' + d.totals.garras + ' garras');
+            document.getElementById('chips').innerHTML = html;
+        }
+
+        function diagBuildLegend(d) {
+            const el = document.getElementById('legend');
+            let html = '<span><span class="sw" style="background:#C96A5A"></span>cada secção S1..Sn · alinhadas pela base</span>';
+            html += '<span><span class="sw" style="background:#7dd3fc"></span>cada cor + número = 1 circuito (coluna sobe / desce / sobe...)</span>';
+            html += '<span><span class="sw" style="background:#1A1815"></span>○ início de circuito (main) — fim de circuito (backup)</span>';
+            html += '<span>detalhe: ' + (diagDetail === 'simples' ? 'Simples' : diagDetail === 'completo' ? 'Setas' : 'Cabos') + '</span>';
+            html += '<span>zoom: ' + Math.round(diagZoom * 100) + '% (arrastar para deslocar)</span>';
+            el.innerHTML = html;
+        }
+
+        function diagBuildBom(d) {
+            const rows = [
+                ['est', 'Tiles 500×500mm', d.tt + ' un', d.secs.map(s => s.tw + '×' + s.th).join(' + ') + ' (colunas × filas por secção)'],
+                ['est', 'Caixas de tiles', d.totals.caixas + ' cx', '1 caixa = ' + d.brand.perBox + ' tiles · ' + d.brand.name],
+                ['est', 'Frames de chão 50cm', d.totals.frames + ' un', '1 por coluna'],
+                ['est', 'Stacks (1m)', d.totals.stacks + ' un', '1 por metro de altura × 1 por cada ' + DIAG_CFG.stackEveryCols + ' colunas (mín. 1)'],
+                ['est', 'Pesos 10kg', d.totals.pesosCount + ' un (' + (d.totals.pesosCount * 10) + ' kg)', '2 por metro de altura por stack (mín. 2)'],
+                ['est', 'Garras', d.totals.garras + ' un', DIAG_CFG.garrasPerStack + ' por stack'],
+                ['sig', 'Cabos rede 20m', d.portsTotal + ' un', d.portsMain + ' main + ' + d.portsBackup + ' backup'],
+                ['sig', 'Cabos rede link 70cm', d.tt + ' un', '1 por tile'],
+                ['pwr', 'PowerCon CE 10m', d.chainsPwr + ' un', '1 por circuito de power (igual ao sinal · ' + d.maxCircuitAmps.toFixed(1) + 'A máx)'],
+                ['pwr', 'Cabos link power 70cm', d.tt + ' un', '1 por tile'],
+                ['dis', 'Socapex M/F', d.socapex + ' un', '1 por cada ' + DIAG_CFG.circuitsPerSocapex + ' PowerCon CE'],
+                ['dis', 'Polvos Socapex 6×CE', d.polvos + ' un', '1 por cada ' + DIAG_CFG.circuitsPerSocapex + ' PowerCon CE'],
+                ['dis', 'Quadro elétrico', d.quadro ? d.quadro + 'A' : '>125A (dividir)', 'L1 ' + d.phaseLoads[0].toFixed(1) + ' · L2 ' + d.phaseLoads[1].toFixed(1) + ' · L3 ' + d.phaseLoads[2].toFixed(1) + ' A/fase · margem 80%'],
+                ['sig', 'Controladoras ' + d.ctrl.name, d.units + ' un', d.ctrl.ports + ' portas cada · distribuição ' + d.tilesPerUnit.join('/') + ' tiles']
+            ];
+            if (d.capacityWarn) rows.push(['sig', 'Capacidade excedida', '—', d.tt + ' tiles > ' + d.units + ' × ' + d.ctrl.maxTiles + ' tiles (rever!)']);
+            if (d.warnOver16) rows.push(['pwr', '⚠ PowerCon acima de 16A', d.maxCircuitAmps.toFixed(1) + ' A/circuito', 'circuito igual ao sinal — verificar cabos CE']);
+            document.getElementById('bom').innerHTML = rows.map(r =>
+                '<tr><td><span class="tag ' + r[0] + '">' + ({est:'EST',sig:'SIN',pwr:'PWR',dis:'DIS'}[r[0]]) + '</span></td><td class="n">' + r[1] + '</td><td class="q">' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('');
+        }
+
+        function diagCaptureCanvas(l) {
+            const prev = diagLayer;
+            diagLayer = l;
+            diagDraw();
+            const url = document.getElementById('cv').toDataURL('image/png');
+            diagLayer = prev;
+            diagDraw();
+            return url;
+        }
+
+        function generateDiagramPDF() {
+            const d = diagCompute();
+            if (!window.jspdf) { alert('jsPDF não carregado'); return; }
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const W = 210, H = 297, M = 12, cw = W - M * 2;
+            let y = M;
+
+            pdf.setFillColor(18, 17, 16);
+            pdf.rect(0, 0, W, 32, 'F');
+            pdf.setTextColor(231, 226, 214);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(15);
+            pdf.text('SmartChoice LED Calculator', M, 11.5);
+            pdf.setFontSize(9.5);
+            pdf.setTextColor(156, 148, 132);
+            pdf.text('Lista de Material — Picking List de Armazém', M, 18.5);
+            const hoje = new Date().toLocaleDateString('pt-PT') + '  ' + new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+            pdf.text('Data: ' + hoje, M, 25.5);
+            pdf.setTextColor(231, 226, 214);
+            pdf.setFontSize(10);
+            pdf.text('Configuração: ' + d.secs.map((s, i) => 'S' + (i + 1) + ' ' + s.w + 'm×' + s.h + 'm').join(' + '), W - M, 12.5, { align: 'right' });
+            pdf.setFontSize(8.5);
+            pdf.setTextColor(156, 148, 132);
+            pdf.text(d.tt + ' tiles · resolução ' + d.totalTw * 192 + ' px de largura', W - M, 18.5, { align: 'right' });
+            y = 40;
+
+            const resumo = [
+                ['Controladora', d.units + '× ' + d.ctrl.name + '  (' + d.ctrl.ports + ' portas: ' + (d.ctrl.ports / 2) + ' main + ' + (d.ctrl.ports / 2) + ' backup)'],
+                ['Sinal', d.portsMain + ' portas main + ' + d.portsBackup + ' backup · ' + d.tilesPerUnit.join('/') + ' tiles por unidade'],
+                ['Power', d.chainsPwr + ' circuitos CE · ' + d.socapex + ' socapex · ' + d.polvos + ' polvos'],
+                ['Quadro', (d.quadro ? d.quadro + 'A' : '>125A (dividir)') + ' · L1 ' + d.phaseLoads[0].toFixed(1) + ' / L2 ' + d.phaseLoads[1].toFixed(1) + ' / L3 ' + d.phaseLoads[2].toFixed(1) + ' A (margem 80%)'],
+                ['Peso total', (d.tt * 9) + ' kg  ·  ' + (d.tt * 9 / 1000).toFixed(2) + ' t']
+            ];
+            pdf.setFillColor(43, 40, 34);
+            pdf.rect(M, y, cw, 7.5, 'F');
+            pdf.setTextColor(231, 226, 214);
+            pdf.setFontSize(9);
+            pdf.text('RESUMO TÉCNICO', M + 3, y + 5.1);
+            y += 11;
+            pdf.setTextColor(110, 103, 90);
+            pdf.setFontSize(9.5);
+            resumo.forEach(r => {
+                pdf.text(r[0] + ':', M + 2, y);
+                pdf.setTextColor(26, 24, 21);
+                pdf.text(r[1], M + 42, y);
+                pdf.setTextColor(110, 103, 90);
+                y += 5;
+            });
+            y += 4;
+
+            const cbX = M + 1, itemX = M + 10, descX = M + 76, qtdRight = W - M;
+            const novaPagina = () => {
+                pdf.addPage();
+                y = M;
+                pdf.setFillColor(18, 17, 16);
+                pdf.rect(0, 0, W, 10, 'F');
+                pdf.setTextColor(231, 226, 214);
+                pdf.setFontSize(9);
+                pdf.text('SmartChoice LED Calculator — Picking List (continuação)', M, 6.5);
+                y = 18;
+            };
+            const colHeader = () => {
+                pdf.setFontSize(8);
+                pdf.setTextColor(110, 103, 90);
+                pdf.text('ITEM', itemX, y);
+                pdf.text('DESCRIÇÃO / REGRA', descX, y);
+                pdf.text('QTD', qtdRight, y, { align: 'right' });
+                y += 2.5;
+                pdf.setDrawColor(156, 148, 132);
+                pdf.setLineWidth(0.2);
+                pdf.line(M, y, W - M, y);
+                y += 4;
+            };
+            const catRow = (nome) => {
+                if (y > 268) novaPagina();
+                pdf.setFillColor(56, 52, 45);
+                pdf.rect(M, y - 4, cw, 7, 'F');
+                pdf.setTextColor(231, 226, 214);
+                pdf.setFontSize(9);
+                pdf.text(nome.toUpperCase(), M + 3, y + 0.7);
+                y += 8;
+            };
+            const itemRow = (nome, desc, qtd) => {
+                if (y > 270) novaPagina();
+                pdf.setDrawColor(156, 148, 132);
+                pdf.setLineWidth(0.35);
+                pdf.rect(cbX, y - 3.6, 4.5, 4.5);
+                pdf.setTextColor(26, 24, 21);
+                pdf.setFontSize(9.5);
+                pdf.text(nome, itemX, y);
+                pdf.setTextColor(110, 103, 90);
+                pdf.setFontSize(8.5);
+                pdf.text(desc, descX, y);
+                pdf.setTextColor(26, 24, 21);
+                pdf.setFontSize(10.5);
+                pdf.text(qtd, qtdRight, y, { align: 'right' });
+                pdf.setDrawColor(156, 148, 132);
+                pdf.setLineWidth(0.15);
+                pdf.line(M, y + 1.8, W - M, y + 1.8);
+                y += 7;
+            };
+
+            colHeader();
+            catRow('Estrutura');
+            itemRow('Tiles 500×500mm', d.secs.map(s => 'S: ' + s.tw + '×' + s.th).join('  '), d.tt + ' un');
+            itemRow('Caixas de tiles', '1 caixa = ' + d.brand.perBox + ' tiles · ' + d.brand.name, d.totals.caixas + ' cx');
+            itemRow('Frames de chão 50cm', '1 por coluna de tiles', d.totals.frames + ' un');
+            itemRow('Stacks (1m)', '1 por metro de altura × 1 por cada 3 colunas (mín. 1)', d.totals.stacks + ' un');
+            itemRow('Pesos 10kg', '2 por metro de altura por stack (mín. 2)', d.totals.pesosCount + ' un (' + (d.totals.pesosCount * 10) + ' kg)');
+            itemRow('Garras', '2 por stack', d.totals.garras + ' un');
+
+            catRow('Sinal');
+            itemRow('Cabos rede 20m', d.portsMain + ' main + ' + d.portsBackup + ' backup (1 por porta)', d.portsTotal + ' un');
+            itemRow('Cabos rede link 70cm', '1 por tile', d.tt + ' un');
+            itemRow('Controladoras ' + d.ctrl.name, d.ctrl.ports + ' portas cada · distribuição ' + d.tilesPerUnit.join('/') + ' tiles', d.units + ' un');
+
+            catRow('Power');
+            itemRow('PowerCon CE 10m', '1 por circuito de power (máx. 16A)', d.chainsPwr + ' un');
+            itemRow('Cabos link power 70cm', '1 por tile', d.tt + ' un');
+
+            catRow('Distribuição');
+            itemRow('Socapex M/F', '1 por cada 6 PowerCon CE', d.socapex + ' un');
+            itemRow('Polvos Socapex 6×CE', '1 por cada 6 PowerCon CE', d.polvos + ' un');
+            itemRow('Quadro elétrico', 'L1 ' + d.phaseLoads[0].toFixed(1) + ' / L2 ' + d.phaseLoads[1].toFixed(1) + ' / L3 ' + d.phaseLoads[2].toFixed(1) + ' A · margem 80%', d.quadro ? d.quadro + 'A' : '>125A');
+
+            if (d.capacityWarn) {
+                y += 2;
+                pdf.setTextColor(201, 106, 90);
+                pdf.setFontSize(8.5);
+                pdf.text('Atenção: ' + d.tt + ' tiles excede a capacidade de ' + d.units + '× ' + d.ctrl.name + '. Verificar!', M, y);
+                y += 5;
+            }
+            if (d.warnOver16) {
+                y += 2;
+                pdf.setTextColor(201, 106, 90);
+                pdf.setFontSize(8.5);
+                pdf.text('Atenção: circuito de power com ' + d.maxCircuitAmps.toFixed(1) + 'A — acima de 16A. Verificar cabos CE.', M, y);
+                y += 5;
+            }
+
+            y += 6;
+            pdf.setTextColor(110, 103, 90);
+            pdf.setFontSize(8.5);
+            pdf.text('Assinalar cada item à medida que é separado no armazém.', M, y);
+            y += 14;
+            pdf.setDrawColor(156, 148, 132);
+            pdf.setLineWidth(0.2);
+            pdf.line(M, y, W - M, y);
+            y += 7;
+            pdf.setTextColor(110, 103, 90);
+            pdf.setFontSize(9);
+            pdf.text('Preparado por: ________________________', M, y);
+            pdf.text('Conferido por: ________________________', W / 2, y);
+            pdf.text('Carregado por: ________________________', W - 52, y);
+            y += 8;
+            pdf.setFontSize(8);
+            pdf.setTextColor(156, 148, 132);
+            pdf.text('Copyright©2026 — All Rights Reserved — Nelson Teixeira', M, y);
+
+            pdf.addPage('a4', 'landscape');
+            const LW = 297;
+            const sigImg = diagCaptureCanvas('sig');
+            pdf.setFillColor(18, 17, 16);
+            pdf.rect(0, 0, LW, 14, 'F');
+            pdf.setTextColor(231, 226, 214);
+            pdf.setFontSize(10);
+            pdf.text('DIAGRAMA DE SINAL — ' + d.secs.map((s, i) => 'S' + (i + 1) + ' ' + s.w + '×' + s.h).join(' + ') + ' · ' + d.units + '× ' + d.ctrl.name, 8, 9.5);
+            pdf.addImage(sigImg, 'PNG', 8, 20, 281, 126.4);
+
+            pdf.addPage('a4', 'landscape');
+            const pwrImg = diagCaptureCanvas('pwr');
+            pdf.setFillColor(18, 17, 16);
+            pdf.rect(0, 0, LW, 14, 'F');
+            pdf.setTextColor(231, 226, 214);
+            pdf.setFontSize(10);
+            pdf.text('DIAGRAMA DE POWER — ' + d.chainsPwr + ' circuitos CE · quadro ' + (d.quadro ? d.quadro + 'A' : '>125A'), 8, 9.5);
+            pdf.addImage(pwrImg, 'PNG', 8, 20, 281, 126.4);
+
+            const pages = pdf.getNumberOfPages();
+            for (let p = 1; p <= pages; p++) {
+                pdf.setPage(p);
+                pdf.setFontSize(8);
+                pdf.setTextColor(156, 148, 132);
+                pdf.text('Página ' + p + ' de ' + pages, pdf.internal.pageSize.getWidth() - 12, pdf.internal.pageSize.getHeight() - 8, { align: 'right' });
+            }
+
+            pdf.save('Smart-Led-Calc_Montagem.pdf');
+        }
+
+        // ================= INIT =================
+        document.getElementById('brandD').addEventListener('change', diagDraw);
+        document.getElementById('ctrlD').addEventListener('change', diagDraw);
+        document.getElementById('redunD').addEventListener('change', diagDraw);
+        document.getElementById('zoomD').addEventListener('input', function() { diagZoom = parseFloat(this.value); diagDraw(); });
+
+        const cv = document.getElementById('cv');
+        let diagDrag = null;
+        cv.style.cursor = 'grab';
+        cv.addEventListener('mousedown', function(e) { diagDrag = { x: e.clientX, y: e.clientY, px: diagPanX, py: diagPanY }; cv.style.cursor = 'grabbing'; });
+        window.addEventListener('mousemove', function(e) {
+            if (!diagDrag) return;
+            const rect = cv.getBoundingClientRect();
+            diagPanX = diagDrag.px + (e.clientX - diagDrag.x) * (cv.width / rect.width);
+            diagPanY = diagDrag.py + (e.clientY - diagDrag.y) * (cv.height / rect.height);
+            diagDraw();
+        });
+        window.addEventListener('mouseup', function() { diagDrag = null; cv.style.cursor = 'grab'; });
 
         window.onload=function(){
             updateAll();
             document.getElementById('width').addEventListener('input',debouncedUpdate);
             document.getElementById('height').addEventListener('input',debouncedUpdate);
+            renderSections();
+            setLayer('sig'); setDetail('simples');
+            diagDraw();
             if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
                 navigator.serviceWorker.register('sw.js').catch(function(){});
             }
