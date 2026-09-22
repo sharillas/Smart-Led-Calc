@@ -637,7 +637,8 @@
                 if (rowsH >= 1) {
                     const perH = Math.min(rowsH * tw, tt);
                     const circH = Math.ceil(tt / perH);
-                    if (circH < circV) { perSig = perH; horizontal = true; }
+                    // horizontal apenas se não custar mais portas E o ecrã for largo/quadrado
+                    if (circH <= circV && tw >= th) { perSig = perH; horizontal = true; }
                 }
                 const stackCols = Math.max(1, Math.ceil(tw / DIAG_CFG.stackEveryCols));
                 const stackRows = Math.max(1, Math.ceil(h));
@@ -669,26 +670,9 @@
                 s.cum.push(acc);
             });
 
-            // portas iguais nas controladoras: total par — se ímpar, dividir o maior circuito em dois
-            let chainsMain = secs.reduce((a, s) => a + s.chains, 0);
-            if (chainsMain > 1 && chainsMain % 2 === 1) {
-                let bestSec = null, bestSize = 0, bestIdx = -1;
-                secs.forEach(s => {
-                    s.chainSizes.forEach((sz, i) => {
-                        if (sz >= 6 && sz > bestSize) { bestSec = s; bestSize = sz; bestIdx = i; }
-                    });
-                });
-                if (bestSec) {
-                    const a = Math.ceil(bestSize / 2), b = bestSize - a;
-                    bestSec.chainSizes.splice(bestIdx, 1, a, b);
-                    bestSec.chains++;
-                    bestSec.cum = [];
-                    let acc = 0;
-                    bestSec.chainSizes.forEach(sz => { bestSec.cum.push(acc); acc += sz; });
-                    bestSec.cum.push(acc);
-                    chainsMain++;
-                }
-            }
+            // portas por lado: soma dos circuitos de cada ecrã (main = início, backup = fim)
+            // NÃO forçar par: o nº de portas de cada lado é o total real de circuitos
+            const chainsMain = secs.reduce((a, s) => a + s.chains, 0);
 
             // circuitos de power = circuitos de sinal (mesmos tamanhos)
             const maxCircuitAmps = Math.max(...secs.flatMap(s => s.chainSizes)) * brand.power / 230;
@@ -700,19 +684,21 @@
             const portsBackup = redunPorts ? chainsMain : 0;
             const portsTotal = portsMain + portsBackup;
 
-            // unidades principais (sem contar backup 1:1)
-            let unitsMain = Math.max(1, Math.ceil((redunPorts ? portsTotal : portsMain) / ctrl.ports), Math.ceil(tt / ctrl.maxTiles));
+            // unidades MAIN: determinadas pelas PORTAS (1 unidade por cada grupo de portas cheio)
+            let unitsMain = Math.max(1, Math.ceil(portsMain / ctrl.ports));
             let chainsPerUnit;
             for (;;) {
                 const base = Math.floor(chainsMain / unitsMain);
                 const rem = chainsMain % unitsMain;
                 const arr = [];
                 for (let i = 0; i < unitsMain; i++) arr.push(base + (i < rem ? 1 : 0));
-                if (arr.every(n => (redunPorts ? 2 * n : n) <= ctrl.ports)) { chainsPerUnit = arr; break; }
+                if (arr.every(n => n <= ctrl.ports)) { chainsPerUnit = arr; break; }
                 unitsMain++;
             }
+            // BACKUP: 1 unidade por cada MAIN (mesma distribuição — fim dos circuitos)
+            const unitsBackup = redunPorts ? unitsMain : 0;
             const capacityWarn = tt > unitsMain * ctrl.maxTiles;
-            const units = redunUnit ? unitsMain * 2 : unitsMain;
+            const units = redunUnit ? unitsMain * 2 : unitsMain + unitsBackup;
 
             const chainTiles = [];
             const chainSec = [];
@@ -797,7 +783,7 @@
             const totalTw = secs.reduce((a, s) => a + s.tw, 0) + DIAG_CFG.gapTiles * (secs.length - 1);
 
             return { secs, tt, chainsMain, chainTiles, chainSec, portsMain, portsBackup, portsTotal,
-                unitsMain, units, chainsPerUnit, tilesPerUnit, ctrl, capacityWarn, chainsPwr, socapex, polvos,
+                unitsMain, unitsBackup, units, chainsPerUnit, tilesPerUnit, ctrl, capacityWarn, chainsPwr, socapex, polvos,
                 watts, ampsTotal, phaseLoads, maxPhaseAmps, assign, quadro, totals, redunPorts, redunUnit, brand, maxTh, totalTw,
                 maxCircuitAmps, warnOver16, suspended };
         }
@@ -871,7 +857,7 @@
             ctx.beginPath(); ctx.rect(x0, 0, x1 - x0, H); ctx.clip();
 
             const halfPorts = d.ctrl.ports / 2;
-            const gridW = halfPorts * 15;
+            const gridW = ((d.redunPorts || d.redunUnit) ? d.ctrl.ports : halfPorts) * 15;
             const unitW = gridW + 44, unitH = 78, gapU = 10;
             const unitsPerRow = Math.max(1, Math.floor((x1 - x0 - 40) / (unitW + gapU)));
             const rowsU = Math.ceil(d.units / unitsPerRow);
@@ -994,8 +980,8 @@
                 let acc = 0;
                 for (let u = 0; u < d.unitsMain; u++) { chainStart.push(acc); acc += d.chainsPerUnit[u]; }
                 for (let u = 0; u < d.units; u++) {
-                    const mu = d.redunUnit ? Math.floor(u / 2) : u;
-                    const isBk = d.redunUnit && (u % 2 === 1);
+                    const isBk = d.redunUnit ? (u % 2 === 1) : (d.redunPorts ? u >= d.unitsMain : false);
+                    const mu = d.redunUnit ? Math.floor(u / 2) : (d.redunPorts ? u % d.unitsMain : u);
                     const row = Math.floor(u / unitsPerRow);
                     const rowUnits = Math.min(unitsPerRow, d.units - row * unitsPerRow);
                     const rowW = rowUnits * (unitW + gapU) - gapU;
@@ -1005,27 +991,26 @@
                     ctx.fillRect(ux, uy, unitW, unitH);
                     ctx.strokeStyle = isBk ? '#C96A5A' : '#38342D'; ctx.lineWidth = 1; ctx.strokeRect(ux + 0.5, uy + 0.5, unitW - 1, unitH - 1);
                     ctx.fillStyle = '#E7E2D6'; ctx.font = '500 11.5px Consolas'; ctx.textAlign = 'center';
-                    ctx.fillText(d.ctrl.name + ' · ' + (mu + 1) + (isBk ? ' BKUP' : (d.redunUnit ? ' MAIN' : '')), ux + unitW / 2, uy + 15);
+                    ctx.fillText(d.ctrl.name + ' · ' + (mu + 1) + (isBk ? ' BKUP' : ((d.redunPorts || d.redunUnit) ? ' MAIN' : '')), ux + unitW / 2, uy + 15);
                     ctx.fillStyle = '#6E675A'; ctx.font = '500 10px Consolas';
                     ctx.fillText(d.chainsPerUnit[mu] + ' circuitos · ' + d.tilesPerUnit[mu] + ' tiles', ux + unitW / 2, uy + 29);
                     ctx.strokeStyle = '#38342D';
                     ctx.beginPath(); ctx.moveTo(ux + 12, uy + 34); ctx.lineTo(ux + unitW - 12, uy + 34); ctx.stroke();
-                    if (d.redunPorts) {
+                    if (d.redunPorts || d.redunUnit) {
                         ctx.fillStyle = '#6E675A'; ctx.font = '500 8px Consolas'; ctx.textAlign = 'right';
-                        ctx.fillText('MAIN', ux + unitW / 2 - gridW / 2 - 6, uy + 44.5);
-                        ctx.fillText('BKUP', ux + unitW / 2 - gridW / 2 - 6, uy + 60.5);
-                    }
-                    for (let i = 0; i < halfPorts; i++) {
-                        const px = ux + unitW / 2 - gridW / 2 + 7.5 + i * 15;
-                        const chainIdx = chainStart[mu] + i;
-                        const used = i < d.chainsPerUnit[mu];
-                        diagDrawPort(ctx, px, uy + 44, used ? dcol(chainIdx) : '#14120E', used ? chainIdx + 1 : 0);
-                        if (d.redunPorts) {
-                            diagDrawPort(ctx, px, uy + 60, used ? dcol(chainIdx) : '#14120E', used ? chainIdx + 1 : 0);
-                        } else {
-                            const chainIdx2 = chainStart[mu] + halfPorts + i;
-                            const used2 = (halfPorts + i) < d.chainsPerUnit[mu];
-                            diagDrawPort(ctx, px, uy + 60, used2 ? dcol(chainIdx2) : '#14120E', used2 ? chainIdx2 + 1 : 0);
+                        ctx.fillText(isBk ? 'BKUP' : 'MAIN', ux + unitW / 2 - gridW / 2 - 6, uy + 44.5);
+                        for (let i = 0; i < d.ctrl.ports; i++) {
+                            const px = ux + unitW / 2 - gridW / 2 + 7.5 + i * 15;
+                            const chainIdx = chainStart[mu] + i;
+                            const used = i < d.chainsPerUnit[mu];
+                            diagDrawPort(ctx, px, uy + 44, used ? dcol(chainIdx) : '#14120E', used ? chainIdx + 1 : 0);
+                        }
+                    } else {
+                        for (let i = 0; i < d.ctrl.ports; i++) {
+                            const px = ux + unitW / 2 - gridW / 2 + 7.5 + i * 15;
+                            const chainIdx = chainStart[mu] + i;
+                            const used = i < d.chainsPerUnit[mu];
+                            diagDrawPort(ctx, px, uy + 44 + (i < halfPorts ? 0 : 16), used ? dcol(chainIdx) : '#14120E', used ? chainIdx + 1 : 0);
                         }
                     }
                 }
@@ -1061,8 +1046,9 @@
                         const local = g - chainStart[mu];
                         const uMain = d.redunUnit ? mu * 2 : mu;
                         const pm = unitPos(uMain);
-                        const portRow = d.redunPorts ? 0 : (local < halfPorts ? 0 : 1);
-                        const px = pm.ux + unitW / 2 - gridW / 2 + 7.5 + (local % halfPorts) * 15;
+                        const perRow = (d.redunPorts || d.redunUnit) ? d.ctrl.ports : halfPorts;
+                        const portRow = (d.redunPorts || d.redunUnit) ? 0 : (local < halfPorts ? 0 : 1);
+                        const px = pm.ux + unitW / 2 - gridW / 2 + 7.5 + (local % perRow) * 15;
                         const py = pm.uy + 44 + portRow * 16;
                         ctx.strokeStyle = dcol(g);
                         ctx.globalAlpha = 0.8; ctx.lineWidth = 1.4;
@@ -1074,10 +1060,10 @@
                         ctx.stroke();
                         if (d.redunPorts || d.redunUnit) {
                             const tE = { x: L.x + pos[endIdx].col * tilePx + tilePx / 2, y: L.y + pos[endIdx].row * tilePx + tilePx / 2 };
-                            const uBk = d.redunUnit ? mu * 2 + 1 : uMain;
+                            const uBk = d.redunUnit ? mu * 2 + 1 : (d.redunPorts ? d.unitsMain + mu : uMain);
                             const pb = unitPos(uBk);
-                            const pbRow = d.redunPorts ? 1 : portRow;
-                            const pxb = pb.ux + unitW / 2 - gridW / 2 + 7.5 + (local % halfPorts) * 15;
+                            const pbRow = 0;
+                            const pxb = pb.ux + unitW / 2 - gridW / 2 + 7.5 + (local % perRow) * 15;
                             const pyb = pb.uy + 44 + pbRow * 16;
                             ctx.globalAlpha = 0.6;
                             ctx.setLineDash([4, 3]);
@@ -1215,7 +1201,7 @@
                 ? d.portsMain + ' portas · ' + d.unitsMain + ' main + ' + d.unitsMain + ' backup (1:1)'
                 : d.portsMain + ' main + ' + d.portsBackup + ' bkup');
             html += cell('a', 'Unidades', d.units + '× ' + d.ctrl.name + ' · ' + d.tilesPerUnit.join('/') + ' t');
-            if (d.capacityWarn) html += cell('r', 'Aviso', d.tt + ' > ' + d.units + '×' + d.ctrl.maxTiles);
+            if (d.capacityWarn) html += cell('r', 'Aviso', d.tt + ' > ' + d.unitsMain + '×' + d.ctrl.maxTiles);
             html += cell('g', 'Power', d.chainsPwr + ' circuitos CE · ' + d.socapex + ' soca · ' + d.polvos + ' polvo');
             if (d.warnOver16) html += cell('r', 'Aviso', d.maxCircuitAmps.toFixed(1) + ' A/circuito > 16A');
             html += cell('', 'Quadro', (d.quadro ? d.quadro + 'A' : '>125A') + ' · L1 ' + d.phaseLoads[0].toFixed(1) + ' / L2 ' + d.phaseLoads[1].toFixed(1) + ' / L3 ' + d.phaseLoads[2].toFixed(1) + ' A');
@@ -1263,9 +1249,11 @@
                 ['dis', 'Quadro elétrico', d.quadro ? d.quadro + 'A' : '>125A (dividir)', 'L1 ' + d.phaseLoads[0].toFixed(1) + ' · L2 ' + d.phaseLoads[1].toFixed(1) + ' · L3 ' + d.phaseLoads[2].toFixed(1) + ' A/fase'],
                 ['sig', 'Controladoras ' + d.ctrl.name, d.units + ' un', d.redunUnit
                     ? d.unitsMain + ' main + ' + d.unitsMain + ' backup (1:1) · ' + d.tilesPerUnit.join('/') + ' tiles por unidade'
-                    : d.ctrl.ports + ' portas cada · distribuição ' + d.tilesPerUnit.join('/') + ' tiles']
+                    : (d.redunPorts
+                        ? d.unitsMain + ' main + ' + d.unitsBackup + ' backup · ' + d.ctrl.ports + ' portas cada · ' + d.tilesPerUnit.join('/') + ' tiles'
+                        : d.ctrl.ports + ' portas cada · distribuição ' + d.tilesPerUnit.join('/') + ' tiles')]
             );
-            if (d.capacityWarn) rows.push(['sig', 'Capacidade excedida', '—', d.tt + ' tiles > ' + d.units + ' × ' + d.ctrl.maxTiles + ' tiles (rever!)']);
+            if (d.capacityWarn) rows.push(['sig', 'Capacidade excedida', '—', d.tt + ' tiles > ' + d.unitsMain + ' × ' + d.ctrl.maxTiles + ' tiles (rever!)']);
             if (d.warnOver16) rows.push(['pwr', '⚠ PowerCon acima de 16A', d.maxCircuitAmps.toFixed(1) + ' A/circuito', 'circuito igual ao sinal — verificar cabos CE']);
             document.getElementById('bom').innerHTML = rows.map(r =>
                 '<tr><td><span class="tag ' + r[0] + '">' + ({est:'EST',sig:'SIN',pwr:'PWR',dis:'DIS'}[r[0]]) + '</span></td><td class="n">' + r[1] + '</td><td class="q">' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('');
@@ -1314,7 +1302,9 @@
             const resumo = [
                 ['Controladora', d.units + '× ' + d.ctrl.name + (d.redunUnit
                     ? ' (' + d.unitsMain + ' main + ' + d.unitsMain + ' backup 1:1)'
-                    : ' (' + d.ctrl.ports + ' portas: ' + (d.ctrl.ports / 2) + ' main + ' + (d.ctrl.ports / 2) + ' backup)')],
+                    : d.redunPorts
+                        ? ' (' + d.unitsMain + ' main + ' + d.unitsBackup + ' backup · ' + d.ctrl.ports + ' portas cada)'
+                        : ' (' + d.ctrl.ports + ' portas · sem redundância)')],
                 ['Sinal', d.portsMain + ' portas main + ' + d.portsBackup + ' backup · ' + d.tilesPerUnit.join('/') + ' tiles por unidade'],
                 ['Power', d.chainsPwr + ' circuitos CE · ' + d.socapex + ' socapex · ' + d.polvos + ' polvos'],
                 ['Quadro', (d.quadro ? d.quadro + 'A' : '>125A (dividir)') + ' · L1 ' + d.phaseLoads[0].toFixed(1) + ' / L2 ' + d.phaseLoads[1].toFixed(1) + ' / L3 ' + d.phaseLoads[2].toFixed(1) + ' A'],
