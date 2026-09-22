@@ -628,13 +628,16 @@
             const secs = diagSections.map((s) => {
                 const w = Math.max(0.5, s.w || 1), h = Math.max(0.5, s.h || 1);
                 const tw = Math.ceil(w * 1000 / 500), th = Math.ceil(h * 1000 / 500), tt = tw * th;
-                const horizontal = tw > th;
-                let perSig;
-                if (horizontal) {
-                    const rows = Math.max(1, Math.floor(DIAG_CFG.tilesPerPortCap / tw));
-                    perSig = Math.min(rows * tw, tt);
-                } else {
-                    perSig = Math.min(signalChainTiles(th), tt);
+                // vertical (preferido: início e fim do circuito em baixo)
+                const perV = Math.min(signalChainTiles(th), tt);
+                const circV = Math.ceil(tt / perV);
+                // horizontal (poupa portas na controladora, prioridade em ecrãs pequenos/largos)
+                let perSig = perV, horizontal = false;
+                const rowsH = Math.floor(DIAG_CFG.tilesPerPortCap / tw);
+                if (rowsH >= 1) {
+                    const perH = Math.min(rowsH * tw, tt);
+                    const circH = Math.ceil(tt / perH);
+                    if (circH < circV) { perSig = perH; horizontal = true; }
                 }
                 const stackCols = Math.max(1, Math.ceil(tw / DIAG_CFG.stackEveryCols));
                 const stackRows = Math.max(1, Math.ceil(h));
@@ -834,7 +837,7 @@
             const ctx = cv.getContext('2d');
             ctx.clearRect(0, 0, cv.width, cv.height);
 
-            ctx.strokeStyle = 'rgba(0,0,0,0.07)';
+            ctx.strokeStyle = 'rgba(0,0,0,0.13)';
             ctx.lineWidth = 1;
             for (let gx = 0; gx < cv.width; gx += 26) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cv.height); ctx.stroke(); }
             for (let gy = 0; gy < cv.height; gy += 26) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cv.width, gy); ctx.stroke(); }
@@ -942,7 +945,7 @@
                         ctx.globalAlpha = 0.88;
                         ctx.fillRect(x + 1, y + 1, tilePx - 2, tilePx - 2);
                         ctx.globalAlpha = 1;
-                        ctx.font = '500 ' + Math.max(9, Math.min(14, tilePx * 0.62)) + 'px Consolas';
+                        ctx.font = '500 ' + Math.max(10, Math.min(16, tilePx * 0.66)) + 'px Consolas';
                         ctx.fillStyle = '#1A1815';
                         ctx.fillText(String(gChain + 1), x + tilePx / 2, y + tilePx / 2 + 0.5);
                     }
@@ -1142,7 +1145,7 @@
                         ctx.fillStyle = dcol(x.ci);
                         ctx.fillRect(fx, ry + 2, 46, 22);
                         ctx.fillStyle = '#1A1815'; ctx.font = '500 9px Consolas';
-                        ctx.fillText('CE ' + x.slot + '·L' + (x.phase + 1), fx + 23, ry + 15.5);
+                        ctx.fillText('C' + (x.ci + 1) + '·L' + (x.phase + 1), fx + 23, ry + 15.5);
                         fx += 46 + gap;
                     });
                 }
@@ -1196,11 +1199,11 @@
         }
 
         function diagCircleMarker(ctx, x, y, tilePx) {
-            const r = Math.min(9, tilePx / 2 - 1);
+            const r = Math.min(11, tilePx / 2 - 1);
             ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 2.5; ctx.stroke();
             ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(231,226,214,0.85)'; ctx.lineWidth = 1; ctx.stroke();
+            ctx.strokeStyle = 'rgba(231,226,214,0.9)'; ctx.lineWidth = 1.2; ctx.stroke();
         }
 
         function diagBuildChips(d) {
@@ -1270,10 +1273,13 @@
 
         function diagCaptureCanvas(l) {
             const prev = diagLayer;
+            const zPrev = diagZoom, pxPrev = diagPanX, pyPrev = diagPanY;
             diagLayer = l;
+            diagZoom = 1; diagPanX = 0; diagPanY = 0;
             diagDraw();
             const url = document.getElementById('cv').toDataURL('image/png');
             diagLayer = prev;
+            diagZoom = zPrev; diagPanX = pxPrev; diagPanY = pyPrev;
             diagDraw();
             return url;
         }
