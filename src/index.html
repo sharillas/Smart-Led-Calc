@@ -637,8 +637,8 @@
                 if (rowsH >= 1) {
                     const perH = Math.min(rowsH * tw, tt);
                     const circH = Math.ceil(tt / perH);
-                    // horizontal apenas se não custar mais portas E o ecrã for largo/quadrado
-                    if (circH <= circV && tw >= th) { perSig = perH; horizontal = true; }
+                    // horizontal apenas se poupar portas (empate -> vertical, inicio+fim em baixo)
+                    if (circH < circV) { perSig = perH; horizontal = true; }
                 }
                 const stackCols = Math.max(1, Math.ceil(tw / DIAG_CFG.stackEveryCols));
                 const stackRows = Math.max(1, Math.ceil(h));
