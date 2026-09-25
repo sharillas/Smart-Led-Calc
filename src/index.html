@@ -180,6 +180,7 @@
                 <button class="btn" id="navDiagram" onclick="showView('diagram')"><i class="fas fa-project-diagram"></i> Diagrama de Montagem</button>
             </div>
             <button class="btn" id="btnPdfCalc" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
+            <button class="btn" onclick="checkForUpdates()"><i class="fas fa-sync-alt"></i> Atualizações</button>
         </div>
 
         <div id="pageCalc">
@@ -1471,6 +1472,32 @@
             }
 
             pdf.save('Smart-Led-Calc_Montagem.pdf');
+        }
+
+        // ================= ATUALIZAÇÕES =================
+        async function checkForUpdates() {
+            const RELEASES = 'https://github.com/sharillas/Smart-Led-Calc/releases';
+            if (!window.__TAURI__) { window.open(RELEASES, '_blank'); return; }
+            try {
+                const platform = await window.__TAURI__.core.invoke('get_platform');
+                if (platform !== 'windows') {
+                    await window.__TAURI__.core.invoke('open_releases');
+                    return;
+                }
+                const upd = await window.__TAURI__.core.invoke('check_update');
+                if (upd) {
+                    const ok = confirm('Nova versão disponível: ' + upd.version + '\n\n' + (upd.body || '') + '\n\nInstalar agora? A app fecha e reinicia automaticamente.');
+                    if (ok) {
+                        await window.__TAURI__.core.invoke('install_update');
+                        alert('A descarregar e instalar... A app reinicia quando terminar.');
+                    }
+                } else {
+                    alert('Está na versão mais recente.');
+                }
+            } catch (e) {
+                try { await window.__TAURI__.core.invoke('open_releases'); }
+                catch (e2) { window.open(RELEASES, '_blank'); }
+            }
         }
 
         // ================= INIT =================
