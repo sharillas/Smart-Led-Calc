@@ -47,6 +47,12 @@
         }
         .btn:hover { border-color: var(--ink2); color: var(--ink); }
         .btn.active { border-color: var(--amber); color: var(--amber); background: var(--amber-dim); }
+        .btn.featured {
+            background: var(--amber); color: #1A1815; border-color: var(--amber);
+            font-weight: 500; letter-spacing: 0.1em;
+        }
+        .btn.featured:hover { background: #efb36a; border-color: #efb36a; color: #1A1815; }
+        .btn.featured.active { background: var(--amber); color: #1A1815; border-color: #E7E2D6; }
         .calculator-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
         @media (max-width: 1024px) { .calculator-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 768px) { .calculator-grid { grid-template-columns: 1fr; } }
@@ -177,7 +183,7 @@
             </div>
             <div class="nav">
                 <button class="btn active" id="navCalc" onclick="showView('calc')"><i class="fas fa-calculator"></i> Calculadora</button>
-                <button class="btn" id="navDiagram" onclick="showView('diagram')"><i class="fas fa-project-diagram"></i> Diagrama de Montagem</button>
+                <button class="btn featured" id="navDiagram" onclick="showView('diagram')"><i class="fas fa-th-large"></i> Calcular Ecran's Complexos</button>
             </div>
             <button class="btn" id="btnPdfCalc" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
             <button class="btn" onclick="checkForUpdates()"><i class="fas fa-sync-alt"></i> Atualizações</button>
@@ -250,6 +256,9 @@
                     <button class="btn-preset" onclick="loadPreset('simples')">Wall único 20×3</button>
                     <button class="btn-preset" onclick="loadPreset('composto')">Exemplo composto (5 secções)</button>
                 </div>
+                <div class="field" style="margin-top:12px;"><label>Nome do projeto</label>
+                    <input type="text" id="projectName" placeholder="ex.: IAPMEI Batalha 2026" style="width:340px;">
+                </div>
             </div>
 
             <div class="card">
@@ -315,7 +324,10 @@
             <div class="card">
                 <div class="card-head">
                     <h2 class="section-title">Lista de Material — Picking List</h2>
-                    <button class="btn-pdf" onclick="generateDiagramPDF()">Exportar PDF (lista + sinal + power)</button>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn-pdf" onclick="generatePlanPDF()">Exportar plano de ecrãs (PDF)</button>
+                        <button class="btn-pdf" onclick="generateDiagramPDF()">Exportar PDF (lista + sinal + power)</button>
+                    </div>
                 </div>
                 <table>
                     <thead><tr><th style="width:56px">Tipo</th><th>Item</th><th style="width:150px">Quantidade</th><th>Descrição / Regra</th></tr></thead>
@@ -516,7 +528,7 @@
             document.getElementById('pageDiagram').style.display = isDiagram ? 'block' : 'none';
             document.getElementById('btnPdfCalc').style.display = isDiagram ? 'none' : 'flex';
             document.getElementById('navCalc').className = 'btn' + (isDiagram ? '' : ' active');
-            document.getElementById('navDiagram').className = 'btn' + (isDiagram ? ' active' : '');
+            document.getElementById('navDiagram').className = 'btn featured' + (isDiagram ? ' active' : '');
             document.getElementById('appRoot').classList.toggle('wide', isDiagram);
             if (isDiagram) diagDraw();
         }
@@ -1472,6 +1484,154 @@
             }
 
             pdf.save('Smart-Led-Calc_Montagem.pdf');
+        }
+
+        function generatePlanPDF() {
+            const d = diagCompute();
+            if (!window.jspdf) { alert('jsPDF não carregado'); return; }
+            const { jsPDF } = window.jspdf;
+            const projName = (document.getElementById('projectName').value || '').trim() || '(sem nome)';
+            const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            const W = 297, H = 210, M = 12;
+
+            // ---- cabeçalho ----
+            pdf.setFillColor(18, 17, 16);
+            pdf.rect(0, 0, W, 16, 'F');
+            pdf.setTextColor(231, 226, 214);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(12);
+            pdf.text('SmartChoice LED Calculator — Plano de Ecrãs', M, 7);
+            pdf.setFontSize(8);
+            pdf.setTextColor(156, 148, 132);
+            const hoje = new Date().toLocaleDateString('pt-PT') + '  ' + new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+            pdf.text('Data: ' + hoje + ' · ' + d.secs.map((s, i) => 'E' + (i + 1) + ' ' + s.w + 'm×' + s.h + 'm').join(' + '), M, 12);
+
+            // ---- área de desenho (centrada, com espaço para cotas) ----
+            const areaY = 34, areaH = H - 34 - 34;
+            const areaW = W - 2 * M;
+            const gaps = d.secs.length - 1;
+            // espaço fixo entre ecrãs para as cotas de altura (mín. 28mm)
+            const gapMM = Math.max(DIAG_CFG.gapTiles * 0, 28);
+            const maxTh = d.maxTh;
+            const tilesW = d.secs.reduce((a, s) => a + s.tw, 0);
+            const tile = Math.min((areaW - gaps * gapMM) / tilesW, areaH / maxTh);
+            const totalW = tilesW * tile + gaps * gapMM;
+            const totalH = maxTh * tile;
+            const ox = M + (areaW - totalW) / 2;
+            const oy = areaY + (areaH - totalH) / 2 + 6;
+
+            // linha de chão
+            pdf.setDrawColor(90, 80, 66);
+            pdf.setLineWidth(0.6);
+            pdf.line(ox - 6, oy + totalH + 1.5, ox + totalW + 6, oy + totalH + 1.5);
+
+            // ---- ecrãs ----
+            let ax = ox;
+            d.secs.forEach((s, i) => {
+                const w = s.tw * tile, h = s.th * tile;
+                const y = oy + (maxTh - s.th) * tile;
+                pdf.setFillColor(238, 234, 226);
+                pdf.rect(ax, y, w, h, 'F');
+                pdf.setDrawColor(130, 110, 85);
+                pdf.setLineWidth(0.5);
+                pdf.rect(ax, y, w, h, 'S');
+                pdf.setDrawColor(190, 180, 165);
+                pdf.setLineWidth(0.1);
+                const steps = 8;
+                for (let k = 1; k < steps; k++) {
+                    pdf.line(ax + (w * k) / steps, y + 2, ax + (w * k) / steps, y + h - 2);
+                    pdf.line(ax + 2, y + (h * k) / steps, ax + w - 2, y + (h * k) / steps);
+                }
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(10);
+                pdf.setTextColor(40, 38, 34);
+                pdf.text('ECRAN ' + (i + 1), ax + w / 2, y - 2.5, { align: 'center' });
+                pdf.setFontSize(8.5);
+                pdf.setTextColor(110, 100, 88);
+                pdf.text((s.tw * 192) + ' × ' + (s.th * 192) + ' px', ax + w / 2, y + h / 2, { align: 'center' });
+                pdf.setFontSize(7);
+                pdf.setTextColor(150, 140, 126);
+                pdf.text(s.tt + ' tiles (' + s.tw + '×' + s.th + ')', ax + w / 2, y + h - 3, { align: 'center' });
+                ax += w + gapMM;
+            });
+
+            // ---- cotas CAD ----
+            const dimColor = () => { pdf.setDrawColor(60, 55, 48); pdf.setFillColor(60, 55, 48); };
+            const arrowH = (x1, x2, y) => {
+                dimColor(); pdf.setLineWidth(0.18);
+                pdf.line(x1, y, x2, y);
+                pdf.triangle(x1, y, x1 + 2, y - 1, x1 + 2, y + 1, 'F');
+                pdf.triangle(x2, y, x2 - 2, y - 1, x2 - 2, y + 1, 'F');
+            };
+            const arrowV = (x, y1, y2) => {
+                dimColor(); pdf.setLineWidth(0.18);
+                pdf.line(x, y1, x, y2);
+                pdf.triangle(x, y1, x - 1, y1 + 2, x + 1, y1 + 2, 'F');
+                pdf.triangle(x, y2, x - 1, y2 - 2, x + 1, y2 - 2, 'F');
+            };
+            ax = ox;
+            d.secs.forEach((s, i) => {
+                const w = s.tw * tile, h = s.th * tile;
+                const y = oy + (maxTh - s.th) * tile;
+                // cota de comprimento (por baixo do ecrã)
+                const dimY = oy + totalH + 8;
+                dimColor(); pdf.setLineWidth(0.12);
+                pdf.line(ax, y + h, ax, dimY);
+                pdf.line(ax + w, y + h, ax + w, dimY);
+                arrowH(ax, ax + w, dimY);
+                pdf.setFontSize(8);
+                pdf.setTextColor(60, 55, 48);
+                pdf.text(s.w + ' metros', ax + w / 2, dimY - 1.5, { align: 'center' });
+                // cota de altura (no espaço entre ecrãs)
+                const dimX = ax + w + (i < d.secs.length - 1 ? gapMM / 2 : 4);
+                dimColor(); pdf.setLineWidth(0.12);
+                pdf.line(ax + w, y, dimX, y);
+                pdf.line(ax + w, y + h, dimX, y + h);
+                arrowV(dimX, y, y + h);
+                pdf.setFontSize(8);
+                pdf.setTextColor(60, 55, 48);
+                pdf.text(s.h + ' metros', dimX - 2.5, y + h / 2, { angle: 90 });
+                ax += w + gapMM;
+            });
+
+            // ---- bloco de desenho técnico (estilo AutoCAD) ----
+            const bx = W - M - 92, by = H - 32, bw = 92, bh = 24;
+            pdf.setDrawColor(40, 38, 34);
+            pdf.setLineWidth(0.7);
+            pdf.rect(bx, by, bw, bh, 'S');
+            pdf.setLineWidth(0.15);
+            const c1 = bx + 34, c2 = c1 + 29, r1 = by + 12;
+            pdf.line(c1, by, c1, by + bh);
+            pdf.line(c2, r1, c2, by + bh);
+            pdf.line(bx, r1, bx + bw, r1);
+            const lbl = (t, x, y) => { pdf.setFontSize(5.2); pdf.setTextColor(110, 100, 88); pdf.text(t, x, y); };
+            const val = (t, x, y) => { pdf.setFontSize(7.5); pdf.setTextColor(40, 38, 34); pdf.text(t, x, y); };
+            pdf.setFontSize(9);
+            pdf.setTextColor(40, 38, 34);
+            pdf.text('Smartchoice', bx + 4, by + 7);
+            pdf.text('Audiovisuais Lda.', bx + 4, by + 11.5);
+            lbl('PROJETO', c1 + 3, r1 - 6.5);
+            pdf.setFontSize(projName.length > 24 ? 6 : 7.5);
+            pdf.setTextColor(40, 38, 34);
+            pdf.text(projName, c1 + 3, r1 - 1.5);
+            lbl('DATA', c1 + 3, by + bh - 6.5);
+            val(new Date().toLocaleDateString('pt-PT'), c1 + 3, by + bh - 1.5);
+            lbl('DESENHADO', c2 + 3, r1 - 6.5);
+            val('Nelson Teixeira', c2 + 3, r1 - 1.5);
+            lbl('ESCALA', c2 + 3, by + bh - 6.5);
+            val('1:' + Math.max(1, Math.round(500 / tile)), c2 + 3, by + bh - 1.5);
+
+            // ---- rodapé de totais ----
+            const totalM = d.secs.reduce((a, s) => a + s.w, 0);
+            const maxM = Math.max(...d.secs.map(s => s.h));
+            pdf.setFontSize(8.5);
+            pdf.setTextColor(60, 55, 48);
+            pdf.text('Total: ' + totalM.toFixed(1) + 'm de largura · ' + maxM.toFixed(1) + 'm de altura máxima · ' + d.tt + ' tiles · ' + (d.totalTw * 192) + ' px de largura máxima', M, H - 8);
+            pdf.setFontSize(7.5);
+            pdf.setTextColor(150, 140, 126);
+            pdf.text('Copyright©2026 — All Rights Reserved — Nelson Teixeira', bx, by - 3);
+
+            pdf.save('Smart-Led-Calc_Plano-Ecrans_' + projName.replace(/[^\w\d\-]+/g, '_') + '.pdf');
         }
 
         // ================= ATUALIZAÇÕES =================
