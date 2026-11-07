@@ -836,6 +836,8 @@
         function dcol(c) { return DIAG_PAL[c % DIAG_PAL.length]; }
         // fases de power: L1 = âmbar, L2 = azul, L3 = verde
         const PHASE_COLORS = ['#d97706', '#2563eb', '#16a34a'];
+        const PHASE_FILLS = ['#fde7c8', '#dbeafe', '#dcfce7'];
+        const PHASE_TEXTS = ['#92400e', '#1e40af', '#166534'];
         function phaseCol(p) { return PHASE_COLORS[p % 3]; }
 
         function diagDraw() {
@@ -897,16 +899,11 @@
             const hPx = d.maxTh * tilePx;
 
             ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
             ctx.fillStyle = type === 'sig' ? '#E3A857' : '#8FAE8B';
-            ctx.font = '500 18px Consolas';
+            ctx.font = '500 16px Consolas';
             ctx.fillText(type === 'sig' ? 'SINAL' : 'POWER', x0 + 24, 32);
-            ctx.fillStyle = '#4E483D';
-            ctx.font = '400 13.5px Consolas';
-            ctx.fillText(type === 'sig'
-                ? (d.redunUnit
-                    ? d.unitsMain + ' main + ' + d.unitsMain + ' backup (1:1) · ' + d.portsMain + ' portas'
-                    : d.portsMain + ' main + ' + d.portsBackup + ' backup · ' + d.units + '× ' + d.ctrl.name) + ' · ' + d.tilesPerUnit.join('/') + ' tiles'
-                : d.chainsPwr + ' circuitos CE · ' + d.socapex + ' socapex · ' + d.polvos + ' polvos · quadro ' + (d.quadro ? d.quadro + 'A' : '>125A'), x0 + 24, 50);
+            diagDrawLegend(ctx, x0 + 24, 52, type);
 
             const secLayout = [];
             let accX = 0;
@@ -948,12 +945,12 @@
                     for (let i = start; i < end; i++) {
                         const p = pos[i];
                         const x = L.x + p.col * tilePx, y = L.y + p.row * tilePx;
-                        ctx.fillStyle = (type === 'pwr') ? phaseCol(d.assign[gChain].phase) : dcol(gChain);
+                        ctx.fillStyle = (type === 'pwr') ? PHASE_FILLS[d.assign[gChain].phase % 3] : dcol(gChain);
                         ctx.globalAlpha = 0.88;
                         ctx.fillRect(x + 1, y + 1, tilePx - 2, tilePx - 2);
                         ctx.globalAlpha = 1;
                         ctx.font = '500 ' + Math.max(10, Math.min(16, tilePx * 0.66)) + 'px Consolas';
-                        ctx.fillStyle = '#1A1815';
+                        ctx.fillStyle = (type === 'pwr') ? PHASE_TEXTS[d.assign[gChain].phase % 3] : '#1A1815';
                         ctx.fillText(String(gChain + 1), x + tilePx / 2, y + tilePx / 2 + 0.5);
                     }
                 }
@@ -1233,6 +1230,38 @@
             ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 1.5; ctx.stroke();
         }
 
+        function diagDrawLegend(ctx, x, y, type) {
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.font = '400 12px Consolas';
+            if (type === 'sig') {
+                ctx.beginPath(); ctx.arc(x + 5, y - 3, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#7dd3fc'; ctx.fill();
+                ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = '#4A443A';
+                ctx.fillText('input main (porta)', x + 15, y);
+                const tx = x + 140;
+                ctx.beginPath();
+                ctx.moveTo(tx, y - 8); ctx.lineTo(tx + 6, y + 2); ctx.lineTo(tx - 6, y + 2);
+                ctx.closePath();
+                ctx.fillStyle = '#fca5a5'; ctx.fill();
+                ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.fillStyle = '#4A443A';
+                ctx.fillText('out → backup', tx + 15, y);
+                ctx.fillStyle = '#6E675A';
+                ctx.fillText('· cada tile = nº do circuito', tx + 82, y);
+            } else {
+                ctx.fillStyle = '#d97706'; ctx.fillRect(x, y - 9, 9, 9);
+                ctx.fillStyle = '#4A443A'; ctx.fillText('L1', x + 14, y);
+                ctx.fillStyle = '#2563eb'; ctx.fillRect(x + 40, y - 9, 9, 9);
+                ctx.fillStyle = '#4A443A'; ctx.fillText('L2', x + 54, y);
+                ctx.fillStyle = '#16a34a'; ctx.fillRect(x + 80, y - 9, 9, 9);
+                ctx.fillStyle = '#4A443A'; ctx.fillText('L3', x + 94, y);
+                ctx.fillStyle = '#6E675A';
+                ctx.fillText('tiles e derivações coloridas pela fase', x + 120, y);
+            }
+        }
+
         function diagBuildChips(d) {
             const cell = (cls, k, v) => '<span class="cell ' + cls + '"><span class="k">' + k + '</span><span class="v">' + v + '</span></span>';
             const secTxt = d.secs.map((s, i) => 'E' + (i + 1) + ':' + s.w + '×' + s.h).join(' · ');
@@ -1402,6 +1431,8 @@
             pdf.text(d.tt + ' tiles · resolução ' + d.totalTw * 192 + ' px de largura', M, 40.5);
             y = 47;
 
+            const totalWm = d.secs.reduce((a, s) => a + s.w, 0) + d.gapM * (d.secs.length - 1);
+            const maxHm = Math.max(...d.secs.map(s => s.h));
             const resumo = [
                 ['Controladora', d.units + '× ' + d.ctrl.name + (d.redunUnit
                     ? ' (' + d.unitsMain + ' main + ' + d.unitsMain + ' backup 1:1)'
@@ -1411,7 +1442,7 @@
                 ['Sinal', d.portsMain + ' portas main + ' + d.portsBackup + ' backup · ' + d.tilesPerUnit.join('/') + ' tiles por unidade'],
                 ['Power', d.chainsPwr + ' circuitos CE · ' + d.socapex + ' socapex · ' + d.polvos + ' polvos'],
                 ['Quadro', (d.quadro ? d.quadro + 'A' : '>125A (dividir)') + ' · L1 ' + d.phaseLoads[0].toFixed(1) + ' / L2 ' + d.phaseLoads[1].toFixed(1) + ' / L3 ' + d.phaseLoads[2].toFixed(1) + ' A'],
-                ['Peso total', (d.tt * 9) + ' kg  ·  ' + (d.tt * 9 / 1000).toFixed(2) + ' t']
+                ['Total', d.tt + ' tiles · ' + totalWm.toFixed(1) + ' m largura · ' + maxHm.toFixed(1) + ' m altura máx. · Peso ' + (d.tt * 9) + ' kg (' + (d.tt * 9 / 1000).toFixed(2) + ' t)']
             ];
             pdf.setFillColor(43, 40, 34);
             pdf.rect(M, y, cw, 7.5, 'F');
@@ -1576,11 +1607,16 @@
             pdf.setPage(powerPage);
             pdfTitleBlock(pdf, LW, LH, projName, powerPage, totalPages);
 
+            const dataCurta = new Date().toLocaleDateString('pt-PT');
             for (let p = 1; p <= totalPages; p++) {
                 pdf.setPage(p);
+                const pw = pdf.internal.pageSize.getWidth();
                 pdf.setFontSize(8);
+                pdf.setTextColor(110, 103, 90);
+                pdf.text('Folha ' + p + ' / ' + totalPages, pw - 15, 20, { align: 'right' });
+                pdf.setFontSize(7);
                 pdf.setTextColor(156, 148, 132);
-                pdf.text('Página ' + p + ' de ' + totalPages, pdf.internal.pageSize.getWidth() - 12, pdf.internal.pageSize.getHeight() - 8, { align: 'right' });
+                pdf.text('Data: ' + dataCurta, pw - 15, 25, { align: 'right' });
             }
 
             pdf.save('Smart-Led-Calc_Montagem.pdf');
