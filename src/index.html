@@ -736,7 +736,9 @@
             const watts = secs.reduce((a, s) => a + s.watts, 0);
             const ampsTotal = watts / 230;
 
-            // distribuição de fases: cada polvo tem 2 CE por fase (CE1+2=L1, CE3+4=L2, CE5+6=L3)
+            // distribuição de fases FIXA (cíclica): CE1+2→L1, CE3+4→L2, CE5+6→L3, a repetir por socapex
+            const CE_PER_PHASE = 2;
+            const CE_PER_SOCA = DIAG_CFG.circuitsPerSocapex;
             const pwrCircuits = [];
             secs.forEach((s, si) => {
                 s.chainSizes.forEach((tiles, c) => {
@@ -744,46 +746,12 @@
                 });
             });
             const phaseLoads = [0, 0, 0];
-            const phaseCount = [0, 0, 0];
-            const assign = pwrCircuits.map(() => ({ polvo: -1, phase: -1 }));
-            const sortedIdx = pwrCircuits.map((_, i) => i).sort((a, b) => pwrCircuits[b].amps - pwrCircuits[a].amps);
-            sortedIdx.forEach(ci => {
-                const ph = [0, 1, 2]
-                    .filter(p => phaseCount[p] < 2 * socapex)
-                    .sort((a, b) => phaseLoads[a] - phaseLoads[b])[0];
-                phaseCount[ph]++;
-                phaseLoads[ph] += pwrCircuits[ci].amps;
-                assign[ci].phase = ph;
+            const assign = pwrCircuits.map((p, ci) => {
+                const phase = Math.floor(ci % CE_PER_SOCA / CE_PER_PHASE);
+                const polvo = Math.floor(ci / CE_PER_SOCA);
+                phaseLoads[phase] += p.amps;
+                return { polvo, phase, slot: ci + 1 };
             });
-            const target = Math.ceil(pwrCircuits.length / socapex);
-            const pool = [[], [], []];
-            assign.forEach((a, ci) => pool[a.phase].push(ci));
-            for (let p = 0; p < socapex; p++) {
-                let filled = 0;
-                const phOrder = [0, 1, 2].sort((x, y) => pool[y].length - pool[x].length);
-                for (const ph of phOrder) {
-                    const n = Math.min(2, pool[ph].length, target - filled);
-                    for (let k = 0; k < n; k++) {
-                        const ci = pool[ph].shift();
-                        assign[ci].polvo = p;
-                        filled++;
-                    }
-                }
-            }
-            let pOver = 0;
-            [0, 1, 2].forEach(ph => {
-                while (pool[ph].length) {
-                    const ci = pool[ph].shift();
-                    assign[ci].polvo = pOver % socapex;
-                    pOver++;
-                }
-            });
-            for (let p = 0; p < socapex; p++) {
-                const cs = [];
-                assign.forEach((a, ci) => { if (a.polvo === p) cs.push(ci); });
-                cs.sort((x, y) => assign[x].phase - assign[y].phase || x - y);
-                cs.forEach((ci, i) => { assign[ci].slot = i + 1; });
-            }
             const maxPhaseAmps = Math.max(...phaseLoads);
             let quadro = DIAG_CFG.quadroOptions.find(q => q * DIAG_CFG.marginQuadro >= maxPhaseAmps) || null;
 
