@@ -1122,41 +1122,47 @@
 
                 const cePos = [];
                 const rowY0 = baseY + 82;
+                const ceStartX = x0 + 40 + 70;
+                const trunkX = quadroX + 52;
+                // tronco vertical do quadro (cabo socapex)
+                ctx.strokeStyle = '#4A443A';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(trunkX, baseY + 64);
+                ctx.lineTo(trunkX, rowY0 + Math.max(0, d.socapex - 1) * 40 + 13);
+                ctx.stroke();
+                ctx.fillStyle = '#6E675A'; ctx.font = '500 14px Consolas'; ctx.textAlign = 'center';
+                ctx.fillText('↓', trunkX, baseY + 64 + 12);
                 for (let s = 0; s < d.socapex; s++) {
                     const ry = rowY0 + s * 40;
                     const cs = [];
                     d.assign.forEach((a, ci) => { if (a.polvo === s) cs.push({ ci, slot: a.slot, phase: a.phase }); });
                     cs.sort((x, y) => x.slot - y.slot);
-                    ctx.fillStyle = '#6E675A';
-                    ctx.font = '500 14px Consolas';
-                    ctx.textAlign = 'center';
-                    const arrY = (s === 0) ? baseY + 64 : ry - 6;
-                    ctx.fillText('↓', quadroX + 52, arrY + (s === 0 ? 14 : 12));
-                    let fx = x0 + 40;
-                    ctx.fillStyle = '#1B1915';
-                    ctx.fillRect(fx, ry, 54, 26);
-                    ctx.strokeStyle = '#38342D'; ctx.strokeRect(fx + 0.5, ry + 0.5, 53, 25);
-                    ctx.fillStyle = '#A99BB8'; ctx.font = '500 11px Consolas'; ctx.textAlign = 'center';
-                    ctx.fillText('SOCA ' + (s + 1), fx + 27, ry + 16);
-                    fx += 54 + gap;
-                    ctx.fillStyle = '#6E675A'; ctx.font = '500 13px Consolas';
-                    ctx.fillText('›', fx - gap / 2, ry + 16.5);
-                    ctx.fillStyle = '#1B1915';
-                    ctx.fillRect(fx, ry, 52, 26);
-                    ctx.strokeStyle = '#475569'; ctx.strokeRect(fx + 0.5, ry + 0.5, 51, 25);
-                    ctx.fillStyle = '#A99BB8'; ctx.font = '500 11px Consolas'; ctx.textAlign = 'center';
-                    ctx.fillText('POLVO ' + (s + 1), fx + 26, ry + 16);
-                    fx += 52 + gap;
-                    cs.forEach((x, k) => {
-                        if (k > 0) {
-                            ctx.fillStyle = '#6E675A'; ctx.font = '500 13px Consolas'; ctx.textAlign = 'center';
-                            ctx.fillText('›', fx - gap / 2, ry + 15.5);
-                        }
+                    const cableY = ry + 13;
+                    const ceEndX = ceStartX + cs.length * (46 + gap) - gap;
+                    // cabo horizontal (tronco -> CE)
+                    ctx.strokeStyle = '#4A443A';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(trunkX, cableY);
+                    ctx.lineTo(ceEndX, cableY);
+                    ctx.stroke();
+                    ctx.fillStyle = '#6E675A'; ctx.font = '500 11px Consolas'; ctx.textAlign = 'center';
+                    ctx.fillText('SOCA ' + (s + 1), trunkX + 34, cableY - 4);
+                    let fx = ceStartX;
+                    cs.forEach((x) => {
                         cePos[x.ci] = { x: fx, y: ry, w: 46, h: 22 };
+                        // derivação cabo -> caixa CE
+                        ctx.strokeStyle = phaseCol(x.phase);
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(fx + 23, cableY);
+                        ctx.lineTo(fx + 23, ry + 2);
+                        ctx.stroke();
                         ctx.fillStyle = phaseCol(x.phase);
                         ctx.fillRect(fx, ry + 2, 46, 22);
                         ctx.fillStyle = '#1A1815'; ctx.font = '500 9px Consolas';
-                        ctx.fillText('CE' + (x.slot) + '·L' + (x.phase + 1), fx + 23, ry + 15.5);
+                        ctx.fillText('CE' + x.slot + '·L' + (x.phase + 1), fx + 23, ry + 15.5);
                         fx += 46 + gap;
                     });
                 }
@@ -1250,7 +1256,8 @@
             const el = document.getElementById('legend');
             let html = '<span><span class="sw" style="background:#C96A5A"></span>cada ecrã E1..En · alinhados pela base · HORIZ = circuito horizontal</span>';
             html += '<span><span class="sw" style="background:#7dd3fc"></span>cada cor + número = 1 circuito (coluna sobe / desce / sobe...)</span>';
-            html += '<span><span class="sw" style="background:#1A1815"></span>○ início de circuito (main) — fim de circuito (backup)</span>';
+            html += '<span><span class="sw" style="background:#1A1815"></span>● input main · ▲ out → backup</span>';
+            html += '<span><span class="sw" style="background:#d97706"></span>L1 <span class="sw" style="background:#2563eb"></span>L2 <span class="sw" style="background:#16a34a"></span>L3 (power)</span>';
             html += '<span>detalhe: ' + (diagDetail === 'simples' ? 'Simples' : diagDetail === 'completo' ? 'Setas' : 'Cabos') + '</span>';
             html += '<span>zoom: ' + Math.round(diagZoom * 100) + '% (arrastar para deslocar)</span>';
             el.innerHTML = html;
