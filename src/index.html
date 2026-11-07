@@ -834,6 +834,9 @@
         }
 
         function dcol(c) { return DIAG_PAL[c % DIAG_PAL.length]; }
+        // fases de power: L1 = âmbar, L2 = azul, L3 = verde
+        const PHASE_COLORS = ['#d97706', '#2563eb', '#16a34a'];
+        function phaseCol(p) { return PHASE_COLORS[p % 3]; }
 
         function diagDraw() {
             const d = diagCompute();
@@ -945,7 +948,7 @@
                     for (let i = start; i < end; i++) {
                         const p = pos[i];
                         const x = L.x + p.col * tilePx, y = L.y + p.row * tilePx;
-                        ctx.fillStyle = dcol(gChain);
+                        ctx.fillStyle = (type === 'pwr') ? phaseCol(d.assign[gChain].phase) : dcol(gChain);
                         ctx.globalAlpha = 0.88;
                         ctx.fillRect(x + 1, y + 1, tilePx - 2, tilePx - 2);
                         ctx.globalAlpha = 1;
@@ -959,6 +962,8 @@
                 for (let c = 0; c < s.chains; c++) {
                     const start = s.cum[c];
                     const end = s.cum[c + 1];
+                    const gChain = chainsOffsetSig[si] + c;
+                    const col = (type === 'pwr') ? phaseCol(d.assign[gChain].phase) : dcol(gChain);
                     const startC = L.x + pos[start].col * tilePx + tilePx / 2;
                     const startY = L.y + pos[start].row * tilePx + tilePx / 2;
                     ctx.beginPath();
@@ -969,10 +974,10 @@
                     ctx.strokeStyle = 'rgba(26,24,21,0.3)';
                     ctx.lineWidth = 2.2;
                     ctx.stroke();
-                    diagCircleMarker(ctx, startC, startY, tilePx);
+                    diagMainMarker(ctx, startC, startY, tilePx, col);
                     if (type === 'sig' && (d.redunPorts || d.redunUnit)) {
                         const e = end - 1;
-                        diagCircleMarker(ctx, L.x + pos[e].col * tilePx + tilePx / 2, L.y + pos[e].row * tilePx + tilePx / 2, tilePx);
+                        diagBackupMarker(ctx, L.x + pos[e].col * tilePx + tilePx / 2, L.y + pos[e].row * tilePx + tilePx / 2, tilePx, col);
                     }
                     if (diagDetail !== 'simples') {
                         for (let i = start; i < end - 1; i++) {
@@ -1009,7 +1014,9 @@
                     ctx.fillRect(ux, uy, unitW, unitH);
                     ctx.strokeStyle = isBk ? '#C96A5A' : '#38342D'; ctx.lineWidth = 1; ctx.strokeRect(ux + 0.5, uy + 0.5, unitW - 1, unitH - 1);
                     ctx.fillStyle = '#E7E2D6'; ctx.font = '500 11.5px Consolas'; ctx.textAlign = 'center';
-                    ctx.fillText(d.ctrl.name + ' · ' + (mu + 1) + (isBk ? ' BKUP' : ((d.redunPorts || d.redunUnit) ? ' MAIN' : '')), ux + unitW / 2, uy + 15);
+                    const ctrlId = String(mu + 1).padStart(2, '0');
+                    const ctrlTitle = isBk ? (d.ctrl.name + ' Backup ' + ctrlId) : (d.ctrl.name + ' ' + ctrlId);
+                    ctx.fillText(ctrlTitle, ux + unitW / 2, uy + 15);
                     ctx.fillStyle = '#6E675A'; ctx.font = '500 10px Consolas';
                     ctx.fillText(d.chainsPerUnit[mu] + ' circuitos · ' + d.tilesPerUnit[mu] + ' tiles', ux + unitW / 2, uy + 29);
                     ctx.strokeStyle = '#38342D';
@@ -1021,14 +1028,14 @@
                             const px = ux + unitW / 2 - gridW / 2 + 7.5 + i * 15;
                             const chainIdx = chainStart[mu] + i;
                             const used = i < d.chainsPerUnit[mu];
-                            diagDrawPort(ctx, px, uy + 44, used ? dcol(chainIdx) : '#14120E', used ? chainIdx + 1 : 0);
+                            diagDrawPort(ctx, px, uy + 44, used ? dcol(chainIdx) : '#14120E', used ? i + 1 : 0);
                         }
                     } else {
                         for (let i = 0; i < d.ctrl.ports; i++) {
                             const px = ux + unitW / 2 - gridW / 2 + 7.5 + i * 15;
                             const chainIdx = chainStart[mu] + i;
                             const used = i < d.chainsPerUnit[mu];
-                            diagDrawPort(ctx, px, uy + 44 + (i < halfPorts ? 0 : 16), used ? dcol(chainIdx) : '#14120E', used ? chainIdx + 1 : 0);
+                            diagDrawPort(ctx, px, uy + 44 + (i < halfPorts ? 0 : 16), used ? dcol(chainIdx) : '#14120E', used ? i + 1 : 0);
                         }
                     }
                 }
@@ -1146,10 +1153,10 @@
                             ctx.fillText('›', fx - gap / 2, ry + 15.5);
                         }
                         cePos[x.ci] = { x: fx, y: ry, w: 46, h: 22 };
-                        ctx.fillStyle = dcol(x.ci);
+                        ctx.fillStyle = phaseCol(x.phase);
                         ctx.fillRect(fx, ry + 2, 46, 22);
                         ctx.fillStyle = '#1A1815'; ctx.font = '500 9px Consolas';
-                        ctx.fillText('C' + (x.ci + 1) + '·L' + (x.phase + 1), fx + 23, ry + 15.5);
+                        ctx.fillText('CE' + (x.slot) + '·L' + (x.phase + 1), fx + 23, ry + 15.5);
                         fx += 46 + gap;
                     });
                 }
@@ -1202,12 +1209,22 @@
             }
         }
 
-        function diagCircleMarker(ctx, x, y, tilePx) {
+        function diagMainMarker(ctx, x, y, tilePx, color) {
             const r = Math.min(11, tilePx / 2 - 1);
             ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 2.5; ctx.stroke();
-            ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(231,226,214,0.9)'; ctx.lineWidth = 1.2; ctx.stroke();
+            ctx.fillStyle = color; ctx.fill();
+            ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+
+        function diagBackupMarker(ctx, x, y, tilePx, color) {
+            const r = Math.min(11, tilePx / 2 - 1);
+            ctx.beginPath();
+            ctx.moveTo(x, y - r);
+            ctx.lineTo(x + r, y + r * 0.8);
+            ctx.lineTo(x - r, y + r * 0.8);
+            ctx.closePath();
+            ctx.fillStyle = color; ctx.fill();
+            ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 1.5; ctx.stroke();
         }
 
         function diagBuildChips(d) {
