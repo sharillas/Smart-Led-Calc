@@ -256,6 +256,9 @@
                     <button class="btn-preset" onclick="loadPreset('simples')">Wall único 20×3</button>
                     <button class="btn-preset" onclick="loadPreset('composto')">Exemplo composto (5 secções)</button>
                 </div>
+                <div class="field" style="margin-top:10px;"><label>Espaçamento entre ecrãs</label>
+                    <input type="number" id="gapD" value="0.5" min="0" step="0.1" style="width:110px;"> <span style="color:var(--text-muted);font-size:0.85rem;">m (1 tile = 0,5 m)</span>
+                </div>
                 <div class="field" style="margin-top:12px;"><label>Nome do projeto</label>
                     <input type="text" id="projectName" placeholder="ex.: IAPMEI Batalha 2026" style="width:340px;">
                 </div>
@@ -637,6 +640,8 @@
             const redunMode = document.getElementById('redunD').value;
             const suspended = document.getElementById('mountD').value === 'suspenso';
             const ctrl = DIAG_CTRLS[document.getElementById('ctrlD').value];
+            const gapM = Math.max(0, parseFloat(document.getElementById('gapD').value) || 0.5);
+            const gapTiles = Math.max(1, Math.round(gapM * 2));
 
             const secs = diagSections.map((s) => {
                 const w = Math.max(0.5, s.w || 1), h = Math.max(0.5, s.h || 1);
@@ -793,12 +798,12 @@
                 manilhas: suspended ? Math.ceil(framesTotal / 2) : 0
             };
             const maxTh = Math.max(...secs.map(s => s.th));
-            const totalTw = secs.reduce((a, s) => a + s.tw, 0) + DIAG_CFG.gapTiles * (secs.length - 1);
+            const totalTw = secs.reduce((a, s) => a + s.tw, 0) + gapTiles * (secs.length - 1);
 
             return { secs, tt, chainsMain, chainTiles, chainSec, portsMain, portsBackup, portsTotal,
                 unitsMain, unitsBackup, units, chainsPerUnit, tilesPerUnit, ctrl, capacityWarn, chainsPwr, socapex, polvos,
                 watts, ampsTotal, phaseLoads, maxPhaseAmps, assign, quadro, totals, redunPorts, redunUnit, brand, maxTh, totalTw,
-                maxCircuitAmps, warnOver16, suspended };
+                gapTiles, gapM, maxCircuitAmps, warnOver16, suspended };
         }
 
         function wiringOrder(tw, th) {
@@ -911,7 +916,7 @@
                     h: s.th * tilePx,
                     tw: s.tw, th: s.th
                 });
-                accX += s.tw + DIAG_CFG.gapTiles;
+                accX += s.tw + d.gapTiles;
             });
             const chainsOffsetSig = [];
             let accC = 0;
@@ -1285,6 +1290,77 @@
             return url;
         }
 
+        // ---- logos SVG -> PNG (jsPDF não lê SVG diretamente) ----
+        let LOGO_REDONDO = null, LOGO_BANNER = null;
+        function svgToPng(url, pxW, pxH) {
+            return fetch(url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); }).then(svg => new Promise((res, rej) => {
+                const blob = new Blob([svg], { type: 'image/svg+xml' });
+                const u = URL.createObjectURL(blob);
+                const img = new Image();
+                img.onload = () => {
+                    const c = document.createElement('canvas');
+                    c.width = pxW; c.height = pxH;
+                    c.getContext('2d').drawImage(img, 0, 0, pxW, pxH);
+                    URL.revokeObjectURL(u);
+                    res(c.toDataURL('image/png'));
+                };
+                img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('svg render')); };
+                img.src = u;
+            }));
+        }
+        async function loadLogos() {
+            try {
+                LOGO_REDONDO = await svgToPng('logos/logo-redondo.svg', 600, 600);
+                LOGO_BANNER = await svgToPng('logos/logo-banner.svg', 1300, 287);
+            } catch (e) { console.warn('logos não carregados:', e); }
+        }
+
+        // ---- cabeçalho claro com logo redondo ----
+        function pdfHeader(pdf, title, subtitle, pageW) {
+            if (LOGO_REDONDO) pdf.addImage(LOGO_REDONDO, 'PNG', 13, 12, 16, 16);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(12.5);
+            pdf.setTextColor(26, 24, 21);
+            pdf.text(title, 31, 21);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(110, 103, 90);
+            pdf.text(subtitle, 31, 27);
+            pdf.setDrawColor(26, 24, 21);
+            pdf.setLineWidth(0.35);
+            pdf.line(11, 30.5, pageW - 11, 30.5);
+        }
+
+        // ---- carimbo (bloco de info) com banner a toda a largura ----
+        function pdfTitleBlock(pdf, pageW, pageH, projName, pageNum, totalPages) {
+            const M = 11, tbW = 110, tbH = 42;
+            const bx = pageW - M - tbW, by = pageH - M - tbH;
+            if (LOGO_BANNER) pdf.addImage(LOGO_BANNER, 'PNG', bx, by, tbW, 24);
+            pdf.setDrawColor(26, 24, 21);
+            pdf.setLineWidth(0.35);
+            pdf.rect(bx, by, tbW, tbH, 'S');
+            pdf.line(bx, by + 24, bx + tbW, by + 24);
+            pdf.line(bx, by + 33, bx + tbW, by + 33);
+            pdf.line(bx + 55, by + 24, bx + 55, by + tbH);
+            pdf.line(bx + 82, by + 24, bx + 82, by + tbH);
+            const lbl = (t, x, y) => { pdf.setFont('helvetica', 'normal'); pdf.setFontSize(4.5); pdf.setTextColor(156, 148, 132); pdf.text(t, x, y); };
+            const val = (t, x, y) => { pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(26, 24, 21); pdf.text(t, x, y); };
+            lbl('PROJETO', bx + 3, by + 28);
+            val((projName || '(sem nome)'), bx + 3, by + 31);
+            lbl('DATA', bx + 58, by + 28);
+            val(new Date().toLocaleDateString('pt-PT'), bx + 58, by + 31);
+            lbl('ESCALA', bx + 85, by + 28);
+            val('—', bx + 85, by + 31);
+            lbl('DESENHADO', bx + 3, by + 37);
+            val('Nelson Teixeira', bx + 3, by + 40);
+            lbl('FOLHA', bx + 58, by + 37);
+            val(pageNum + ' / ' + totalPages, bx + 58, by + 40);
+            lbl('APROVADO', bx + 85, by + 37);
+            val('______', bx + 85, by + 40);
+        }
+
+
+
         function generateDiagramPDF() {
             const d = diagCompute();
             if (!window.jspdf) { alert('jsPDF não carregado'); return; }
@@ -1293,24 +1369,14 @@
             const W = 210, H = 297, M = 12, cw = W - M * 2;
             let y = M;
 
-            pdf.setFillColor(18, 17, 16);
-            pdf.rect(0, 0, W, 32, 'F');
-            pdf.setTextColor(231, 226, 214);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(15);
-            pdf.text('SmartChoice LED Calculator', M, 11.5);
-            pdf.setFontSize(9.5);
-            pdf.setTextColor(156, 148, 132);
-            pdf.text('Lista de Material — Picking List de Armazém', M, 18.5);
+            pdfHeader(pdf, 'SmartChoice LED Calculator', 'Lista de Material — Picking List de Armazém', W);
             const hoje = new Date().toLocaleDateString('pt-PT') + '  ' + new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
-            pdf.text('Data: ' + hoje, M, 25.5);
-            pdf.setTextColor(231, 226, 214);
-            pdf.setFontSize(10);
-            pdf.text('Configuração: ' + d.secs.map((s, i) => 'E' + (i + 1) + ' ' + s.w + 'm×' + s.h + 'm').join(' + '), W - M, 12.5, { align: 'right' });
-            pdf.setFontSize(8.5);
-            pdf.setTextColor(156, 148, 132);
-            pdf.text(d.tt + ' tiles · resolução ' + d.totalTw * 192 + ' px de largura', W - M, 18.5, { align: 'right' });
-            y = 40;
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(110, 103, 90);
+            pdf.text('Data: ' + hoje + '  ·  Configuração: ' + d.secs.map((s, i) => 'E' + (i + 1) + ' ' + s.w + 'm×' + s.h + 'm').join(' + '), M, 35.5);
+            pdf.text(d.tt + ' tiles · resolução ' + d.totalTw * 192 + ' px de largura', M, 40.5);
+            y = 47;
 
             const resumo = [
                 ['Controladora', d.units + '× ' + d.ctrl.name + (d.redunUnit
@@ -1456,31 +1522,41 @@
             pdf.setTextColor(156, 148, 132);
             pdf.text('Copyright©2026 — All Rights Reserved — Nelson Teixeira', M, y);
 
-            pdf.addPage('a4', 'landscape');
-            const LW = 297;
-            const sigImg = diagCaptureCanvas('sig');
-            pdf.setFillColor(18, 17, 16);
-            pdf.rect(0, 0, LW, 14, 'F');
-            pdf.setTextColor(231, 226, 214);
-            pdf.setFontSize(10);
-            pdf.text('DIAGRAMA DE SINAL — ' + d.secs.map((s, i) => 'E' + (i + 1) + ' ' + s.w + '×' + s.h).join(' + ') + ' · ' + d.units + '× ' + d.ctrl.name, 8, 9.5);
-            pdf.addImage(sigImg, 'PNG', 8, 20, 281, 126.4);
+            const projName = (document.getElementById('projectName').value || '').trim() || '(sem nome)';
+            const LW = 297, LH = 210;
+            const drawFrame = () => {
+                pdf.setDrawColor(26, 24, 21);
+                pdf.setLineWidth(0.7);
+                pdf.rect(8, 8, 281, 194, 'S');
+                pdf.setLineWidth(0.2);
+                pdf.rect(11, 11, 275, 188, 'S');
+            };
 
+            const signalPage = pdf.getNumberOfPages() + 1;
+            pdf.addPage('a4', 'landscape');
+            const sigImg = diagCaptureCanvas('sig');
+            drawFrame();
+            pdfHeader(pdf, 'SmartChoice LED Calculator', 'Ligações: ' + d.portsMain + ' Main · ' + d.portsBackup + ' Backup', LW);
+            pdf.addImage(sigImg, 'PNG', 11, 33, 275, 123.8);
+
+            const powerPage = pdf.getNumberOfPages() + 1;
             pdf.addPage('a4', 'landscape');
             const pwrImg = diagCaptureCanvas('pwr');
-            pdf.setFillColor(18, 17, 16);
-            pdf.rect(0, 0, LW, 14, 'F');
-            pdf.setTextColor(231, 226, 214);
-            pdf.setFontSize(10);
-            pdf.text('DIAGRAMA DE POWER — ' + d.chainsPwr + ' circuitos CE · quadro ' + (d.quadro ? d.quadro + 'A' : '>125A'), 8, 9.5);
-            pdf.addImage(pwrImg, 'PNG', 8, 20, 281, 126.4);
+            drawFrame();
+            pdfHeader(pdf, 'SmartChoice LED Calculator', 'L1 = ' + d.phaseLoads[0].toFixed(1) + ' Amp. | L2 = ' + d.phaseLoads[1].toFixed(1) + ' Amp. | L3 = ' + d.phaseLoads[2].toFixed(1) + ' Amp.', LW);
+            pdf.addImage(pwrImg, 'PNG', 11, 33, 275, 123.8);
 
-            const pages = pdf.getNumberOfPages();
-            for (let p = 1; p <= pages; p++) {
+            const totalPages = pdf.getNumberOfPages();
+            pdf.setPage(signalPage);
+            pdfTitleBlock(pdf, LW, LH, projName, signalPage, totalPages);
+            pdf.setPage(powerPage);
+            pdfTitleBlock(pdf, LW, LH, projName, powerPage, totalPages);
+
+            for (let p = 1; p <= totalPages; p++) {
                 pdf.setPage(p);
                 pdf.setFontSize(8);
                 pdf.setTextColor(156, 148, 132);
-                pdf.text('Página ' + p + ' de ' + pages, pdf.internal.pageSize.getWidth() - 12, pdf.internal.pageSize.getHeight() - 8, { align: 'right' });
+                pdf.text('Página ' + p + ' de ' + totalPages, pdf.internal.pageSize.getWidth() - 12, pdf.internal.pageSize.getHeight() - 8, { align: 'right' });
             }
 
             pdf.save('Smart-Led-Calc_Montagem.pdf');
@@ -1510,11 +1586,12 @@
             const areaY = 34, areaH = H - 34 - 34;
             const areaW = W - 2 * M;
             const gaps = d.secs.length - 1;
-            // espaço fixo entre ecrãs para as cotas de altura (mín. 28mm)
-            const gapMM = Math.max(DIAG_CFG.gapTiles * 0, 28);
             const maxTh = d.maxTh;
             const tilesW = d.secs.reduce((a, s) => a + s.tw, 0);
-            const tile = Math.min((areaW - gaps * gapMM) / tilesW, areaH / maxTh);
+            // espaço entre ecrãs proporcional ao espaçamento configurado (mín. 28mm para a cota)
+            let tile = Math.min((areaW - gaps * 28) / tilesW, areaH / maxTh);
+            const gapMM = Math.max(28, d.gapTiles * tile);
+            tile = Math.min((areaW - gaps * gapMM) / tilesW, areaH / maxTh);
             const totalW = tilesW * tile + gaps * gapMM;
             const totalH = maxTh * tile;
             const ox = M + (areaW - totalW) / 2;
@@ -1591,6 +1668,17 @@
                 pdf.setFontSize(8);
                 pdf.setTextColor(60, 55, 48);
                 pdf.text(s.h + ' metros', dimX - 2.5, y + h / 2, { angle: 90 });
+                // cota de espaçamento (no vão entre ecrãs)
+                if (i < d.secs.length - 1) {
+                    const gapY = oy - 8;
+                    dimColor(); pdf.setLineWidth(0.12);
+                    pdf.line(ax + w, y, ax + w, gapY);
+                    pdf.line(ax + w + gapMM, y, ax + w + gapMM, gapY);
+                    arrowH(ax + w, ax + w + gapMM, gapY);
+                    pdf.setFontSize(7.5);
+                    pdf.setTextColor(60, 55, 48);
+                    pdf.text(d.gapM + ' m', ax + w + gapMM / 2, gapY - 1.5, { align: 'center' });
+                }
                 ax += w + gapMM;
             });
 
@@ -1665,6 +1753,7 @@
         document.getElementById('ctrlD').addEventListener('change', diagDraw);
         document.getElementById('mountD').addEventListener('change', diagDraw);
         document.getElementById('redunD').addEventListener('change', diagDraw);
+        document.getElementById('gapD').addEventListener('input', diagDraw);
         document.getElementById('zoomD').addEventListener('input', function() { diagZoom = parseFloat(this.value); diagDraw(); });
 
         const cv = document.getElementById('cv');
@@ -1688,6 +1777,7 @@
             setLayer('sig'); setDetail('simples');
             diagDraw();
             if (location.hash === '#diagram') showView('diagram');
+            loadLogos();
             if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
                 navigator.serviceWorker.register('sw.js').catch(function(){});
             }
