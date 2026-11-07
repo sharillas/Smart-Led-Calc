@@ -1005,25 +1005,18 @@
                     }
                 }
 
-                if (diagDetail === 'cabos') {
-                    const busY = wy + hPx + 8;
-                    ctx.strokeStyle = 'rgba(74,68,58,0.6)';
-                    ctx.setLineDash([5, 5]); ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.moveTo(wallLeft - 8, busY); ctx.lineTo(wallRight + 8, busY); ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.fillStyle = '#4E483D'; ctx.font = '500 10px Consolas'; ctx.textAlign = 'left';
-                    ctx.fillText('calha de cabos rede 20m — main contínuo · backup tracejado', x0 + 20, busY + 14);
-                    const unitPos = (u) => {
-                        const row = Math.floor(u / unitsPerRow);
-                        const rowUnits = Math.min(unitsPerRow, d.units - row * unitsPerRow);
-                        const rowW = rowUnits * (unitW + gapU) - gapU;
-                        return {
-                            ux: (x0 + x1) / 2 - rowW / 2 + (u % unitsPerRow) * (unitW + gapU),
-                            uy: wy + hPx + 30 + row * (unitH + gapU)
-                        };
+                const busY = wy + hPx + 8;
+                const unitPos = (u) => {
+                    const row = Math.floor(u / unitsPerRow);
+                    const rowUnits = Math.min(unitsPerRow, d.units - row * unitsPerRow);
+                    const rowW = rowUnits * (unitW + gapU) - gapU;
+                    return {
+                        ux: (x0 + x1) / 2 - rowW / 2 + (u % unitsPerRow) * (unitW + gapU),
+                        uy: wy + hPx + 30 + row * (unitH + gapU)
                     };
-                    for (let g = 0; g < d.chainsMain; g++) {
-                        const si = d.chainSec[g];
+                };
+                for (let g = 0; g < d.chainsMain; g++) {
+                    const si = d.chainSec[g];
                         const s = d.secs[si];
                         const L = secLayout[si];
                         const pos = s.horizontal ? wiringOrderH(s.tw, s.th) : wiringOrder(s.tw, s.th);
@@ -1066,7 +1059,6 @@
                             ctx.setLineDash([]);
                         }
                         ctx.globalAlpha = 1;
-                    }
                 }
             } else {
                 const gap = 10;
@@ -1132,38 +1124,28 @@
                     });
                 }
 
-                if (diagDetail === 'cabos') {
-                    const busY = wy + hPx + 8;
-                    ctx.strokeStyle = 'rgba(74,68,58,0.6)';
-                    ctx.setLineDash([5, 5]); ctx.lineWidth = 1;
-                    ctx.beginPath(); ctx.moveTo(wallLeft - 8, busY); ctx.lineTo(wallRight + 8, busY); ctx.stroke();
-                    ctx.setLineDash([]);
-                    ctx.fillStyle = '#4E483D'; ctx.font = '500 10px Consolas'; ctx.textAlign = 'left';
-                    ctx.fillText('calha PowerCon CE 10m', x0 + 20, busY + 14);
-                    let pIdx = 0;
-                    d.secs.forEach((s, si) => {
-                        const L = secLayout[si];
-                        const pos = s.horizontal ? wiringOrderH(s.tw, s.th) : wiringOrder(s.tw, s.th);
-                        for (let c = 0; c < s.chains; c++) {
-                            const g = pIdx++;
-                            const startIdx = s.cum[c];
-                            const t = { x: L.x + pos[startIdx].col * tilePx + tilePx / 2, y: L.y + pos[startIdx].row * tilePx + tilePx / 2 };
-                            const cp = cePos[g];
-                            ctx.strokeStyle = dcol(g);
-                            ctx.globalAlpha = 0.8;
-                            ctx.lineWidth = 1.4;
-                            ctx.setLineDash([4, 3]);
-                            ctx.beginPath();
-                            ctx.moveTo(cp.x + cp.w / 2, cp.y + 2);
-                            ctx.lineTo(cp.x + cp.w / 2, busY);
-                            ctx.lineTo(t.x, busY);
-                            ctx.lineTo(t.x, t.y + tilePx / 2);
-                            ctx.stroke();
-                            ctx.setLineDash([]);
-                            ctx.globalAlpha = 1;
-                        }
-                    });
-                }
+                const busY = wy + hPx + 8;
+                let pIdx = 0;
+                d.secs.forEach((s, si) => {
+                    const L = secLayout[si];
+                    const pos = s.horizontal ? wiringOrderH(s.tw, s.th) : wiringOrder(s.tw, s.th);
+                    for (let c = 0; c < s.chains; c++) {
+                        const g = pIdx++;
+                        const startIdx = s.cum[c];
+                        const t = { x: L.x + pos[startIdx].col * tilePx + tilePx / 2, y: L.y + pos[startIdx].row * tilePx + tilePx / 2 };
+                        const cp = cePos[g];
+                        ctx.strokeStyle = phaseCol(d.assign[g].phase);
+                        ctx.globalAlpha = 0.8;
+                        ctx.lineWidth = 1.4;
+                        ctx.beginPath();
+                        ctx.moveTo(cp.x + cp.w / 2, cp.y + 2);
+                        ctx.lineTo(cp.x + cp.w / 2, busY);
+                        ctx.lineTo(t.x, busY);
+                        ctx.lineTo(t.x, t.y + tilePx / 2);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                    }
+                });
             }
 
             ctx.restore();
