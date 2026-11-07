@@ -968,8 +968,8 @@
                     for (let i = start + 1; i < end; i++) {
                         ctx.lineTo(L.x + pos[i].col * tilePx + tilePx / 2, L.y + pos[i].row * tilePx + tilePx / 2);
                     }
-                    ctx.strokeStyle = 'rgba(26,24,21,0.3)';
-                    ctx.lineWidth = 2.2;
+                    ctx.strokeStyle = (type === 'pwr') ? col : '#4A443A';
+                    ctx.lineWidth = 1.8;
                     ctx.stroke();
                     diagMainMarker(ctx, startC, startY, tilePx, col);
                     if (type === 'sig' && (d.redunPorts || d.redunUnit)) {
