@@ -83,6 +83,11 @@
         .result-box { border-color: rgba(201,106,90,0.5); }
         .preview-label { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; color: var(--ink3); letter-spacing: 0.12em; margin-bottom: 8px; }
         .resolution-value { font-family: var(--mono); font-size: 2rem; font-weight: 500; color: var(--green); }
+        .resolution-title { font-family: var(--mono); font-size: 1.15rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #E5484D; margin-bottom: 8px; }
+        .resolution-ratio { font-family: var(--mono); font-size: 0.88rem; color: var(--ink2); margin-top: 8px; }
+        .ratio-indicators { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+        .ratio-chip { font-family: var(--mono); font-size: 0.8rem; font-weight: 600; padding: 4px 14px; border-radius: 3px; border: 1px solid var(--line2); color: var(--ink3); }
+        .ratio-chip.on { background: rgba(143,174,139,0.22); border-color: var(--green); color: var(--green); }
         .result-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--line); }
         .result-row:last-child { border-bottom: none; }
         .result-label { color: var(--ink3); font-size: 0.86rem; }
@@ -169,10 +174,10 @@
         #pageDiagram td.q { font-family: var(--mono); font-size: 1.1rem; color: var(--ink); font-variant-numeric: tabular-nums; }
         #pageDiagram .tag { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.1em; padding: 2px 7px; border-radius: 2px; }
         #pageDiagram .tag.est { color: #B8B09E; border: 1px solid rgba(184,176,158,0.4); }
-        #pageDiagram .tag.sig { color: var(--amber); border: 1px solid rgba(227,168,87,0.4); }
+        #pageDiagram .tag.scr { color: var(--amber); border: 1px solid rgba(227,168,87,0.4); }
+        #pageDiagram .tag.cab { color: #7dd3fc; border: 1px solid rgba(125,211,252,0.4); }
         #pageDiagram .tag.pwr { color: var(--green); border: 1px solid rgba(143,174,139,0.4); }
-        #pageDiagram .tag.dis { color: var(--violet); border: 1px solid rgba(169,155,184,0.4); }
-        #pageDiagram .footer { text-align: center; margin-top: 22px; padding: 14px 0 6px; border-top: 1px solid var(--line); font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; color: var(--ink3); }
+        #pageDiagram .tag.ctrl { color: var(--violet); border: 1px solid rgba(169,155,184,0.4); }
     </style>
 </head>
 <body>
@@ -196,7 +201,7 @@
                     <div class="card-header"><h2><i class="fas fa-ruler"></i> Dimensões</h2><span class="card-badge">P2.6mm</span></div>
                     <div class="input-group"><label>Comprimento (m)</label><div class="input-wrapper"><i class="fas fa-arrows-alt-h"></i><input type="number" id="width" value="5" step="0.1" min="0.1" oninput="debouncedUpdate()"></div></div>
                     <div class="input-group"><label>Altura (m)</label><div class="input-wrapper"><i class="fas fa-arrows-alt-v"></i><input type="number" id="height" value="3" step="0.1" min="0.1" oninput="debouncedUpdate()"></div></div>
-                    <div class="resolution-box"><div class="preview-label">Resolução do LED</div><div class="resolution-value" id="liveResolution">1920 x 1080</div></div>
+                    <div class="resolution-box"><div class="resolution-title">RESOLUÇÃO DO LED SCREEN</div><div class="resolution-value" id="liveResolution">1920 x 1080</div><div class="resolution-ratio">Ratio: <span id="liveRatio">1.7778</span></div><div class="ratio-indicators"><span class="ratio-chip" id="chip169">16:9</span><span class="ratio-chip" id="chip43">4:3</span></div></div>
                     <div class="result-box">
                         <div class="result-row"><span class="result-label">Área</span><span class="result-value" id="totalArea">15.0 m²</span></div>
                         <div class="result-row"><span class="result-label">Tiles</span><span class="result-value" id="totalTilesResult">60</span></div>
@@ -337,8 +342,6 @@
                     <tbody id="bom"></tbody>
                 </table>
             </div>
-
-            <div class="footer">Copyright©2026 — All Rights Reserved — Nelson Teixeira</div>
         </div>
 
         <div class="footer-app">Copyright©2026 — All Rights Reserved — Nelson Teixeira</div>
@@ -365,6 +368,12 @@
             let rw=tw*192, rh=th*192;
 
             document.getElementById('liveResolution').textContent=rw+' x '+rh;
+            let ratioVal=w/h;
+            document.getElementById('liveRatio').textContent=ratioVal.toFixed(4);
+            const r169=16/9, r43=4/3;
+            const closer169=Math.abs(ratioVal-r169)<=Math.abs(ratioVal-r43);
+            document.getElementById('chip169').className='ratio-chip'+(closer169?' on':'');
+            document.getElementById('chip43').className='ratio-chip'+(closer169?'':' on');
             document.getElementById('totalArea').textContent=(w*h).toFixed(1)+' m²';
             document.getElementById('totalTilesResult').textContent=tt;
             document.getElementById('totalWeightResult').textContent=(tt*TILE_WEIGHT_KG)+' kg';
@@ -1282,8 +1291,8 @@
 
         function diagBuildBom(d) {
             const rows = [
-                ['est', 'Tiles 500×500mm', d.tt + ' un', d.secs.map(s => s.tw + '×' + s.th).join(' + ') + ' (colunas × filas por ecrã)'],
-                ['est', 'Caixas de tiles', d.totals.caixas + ' cx', '1 caixa = ' + d.brand.perBox + ' tiles · ' + d.brand.name],
+                ['scr', 'Tiles 500×500mm', d.tt + ' un', d.secs.map(s => s.tw + '×' + s.th).join(' + ') + ' (colunas × filas por ecrã)'],
+                ['scr', 'Caixas de tiles', d.totals.caixas + ' cx', '1 caixa = ' + d.brand.perBox + ' tiles · ' + d.brand.name],
                 ['est', 'Frames de chão 50cm', d.totals.frames + ' un', '1 por coluna']
             ];
             if (d.suspended) {
@@ -1299,23 +1308,23 @@
                 );
             }
             rows.push(
-                ['sig', 'Cabos rede 20m', d.portsTotal + ' un', d.portsMain + ' main + ' + d.portsBackup + ' backup'],
-                ['sig', 'Cabos rede link 70cm', d.tt + ' un', '1 por tile'],
-                ['pwr', 'PowerCon CE 10m', d.chainsPwr + ' un', '1 por circuito de power (igual ao sinal · ' + d.maxCircuitAmps.toFixed(1) + 'A máx)'],
-                ['pwr', 'Cabos link power 70cm', d.tt + ' un', '1 por tile'],
-                ['dis', 'Socapex M/F', d.socapex + ' un', '1 por cada ' + DIAG_CFG.circuitsPerSocapex + ' PowerCon CE'],
-                ['dis', 'Polvos Socapex 6×CE', d.polvos + ' un', '1 por cada ' + DIAG_CFG.circuitsPerSocapex + ' PowerCon CE'],
-                ['dis', 'Quadro elétrico', d.quadro ? d.quadro + 'A' : '>125A (dividir)', 'L1 ' + d.phaseLoads[0].toFixed(1) + ' · L2 ' + d.phaseLoads[1].toFixed(1) + ' · L3 ' + d.phaseLoads[2].toFixed(1) + ' A/fase'],
-                ['sig', 'Controladoras ' + d.ctrl.name, d.units + ' un', d.redunUnit
+                ['cab', 'Cabos rede 20m', d.portsTotal + ' un', d.portsMain + ' main + ' + d.portsBackup + ' backup'],
+                ['cab', 'Cabos rede link 70cm', d.tt + ' un', '1 por tile'],
+                ['cab', 'PowerCon CE 10m', d.chainsPwr + ' un', '1 por circuito de power (igual ao sinal · ' + d.maxCircuitAmps.toFixed(1) + 'A máx)'],
+                ['cab', 'Cabos link power 70cm', d.tt + ' un', '1 por tile'],
+                ['cab', 'Socapex M/F', d.socapex + ' un', '1 por cada ' + DIAG_CFG.circuitsPerSocapex + ' PowerCon CE'],
+                ['cab', 'Polvos Socapex 6×CE', d.polvos + ' un', '1 por cada ' + DIAG_CFG.circuitsPerSocapex + ' PowerCon CE'],
+                ['pwr', 'Quadro elétrico', d.quadro ? d.quadro + 'A' : '>125A (dividir)', 'L1 ' + d.phaseLoads[0].toFixed(1) + ' · L2 ' + d.phaseLoads[1].toFixed(1) + ' · L3 ' + d.phaseLoads[2].toFixed(1) + ' A/fase'],
+                ['ctrl', 'Controladoras ' + d.ctrl.name, d.units + ' un', d.redunUnit
                     ? d.unitsMain + ' main + ' + d.unitsMain + ' backup (1:1) · ' + d.tilesPerUnit.join('/') + ' tiles por unidade'
                     : (d.redunPorts
                         ? d.unitsMain + ' main + ' + d.unitsBackup + ' backup · ' + d.ctrl.ports + ' portas cada · ' + d.tilesPerUnit.join('/') + ' tiles'
                         : d.ctrl.ports + ' portas cada · distribuição ' + d.tilesPerUnit.join('/') + ' tiles')]
             );
-            if (d.capacityWarn) rows.push(['sig', 'Capacidade excedida', '—', d.tt + ' tiles > ' + d.unitsMain + ' × ' + d.ctrl.maxTiles + ' tiles (rever!)']);
+            if (d.capacityWarn) rows.push(['ctrl', 'Capacidade excedida', '—', d.tt + ' tiles > ' + d.unitsMain + ' × ' + d.ctrl.maxTiles + ' tiles (rever!)']);
             if (d.warnOver16) rows.push(['pwr', '⚠ PowerCon acima de 16A', d.maxCircuitAmps.toFixed(1) + ' A/circuito', 'circuito igual ao sinal — verificar cabos CE']);
             document.getElementById('bom').innerHTML = rows.map(r =>
-                '<tr><td><span class="tag ' + r[0] + '">' + ({est:'EST',sig:'SIN',pwr:'PWR',dis:'DIS'}[r[0]]) + '</span></td><td class="n">' + r[1] + '</td><td class="q">' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('');
+                '<tr><td><span class="tag ' + r[0] + '">' + ({est:'EST',scr:'SCR',cab:'CAB',pwr:'PWR',ctrl:'CTRL'}[r[0]]) + '</span></td><td class="n">' + r[1] + '</td><td class="q">' + r[2] + '</td><td>' + r[3] + '</td></tr>').join('');
         }
 
         function diagCaptureCanvas(l) {
