@@ -1384,7 +1384,7 @@
 
 
 
-        function drawDiagramPDF(pdf, d) {
+        function drawListPDF(pdf, d) {
             pdf.addPage('a4', 'portrait');
             const W = 210, H = 297, M = 12, cw = W - M * 2;
             let y = M;
@@ -1541,7 +1541,9 @@
             pdf.setTextColor(156, 148, 132);
             pdf.text('Copyright©2026 — All Rights Reserved — Nelson Teixeira', M, y);
 
-            const projName = (document.getElementById('projectName').value || '').trim() || '(sem nome)';
+        }
+
+        function drawSignalPowerPDF(pdf, d) {
             const LW = 297, LH = 210;
             const drawFrame = () => {
                 pdf.setDrawColor(26, 24, 21);
@@ -1565,12 +1567,7 @@
             pdfHeader(pdf, 'SmartChoice LED Calculator', 'L1 = ' + d.phaseLoads[0].toFixed(1) + ' Amp. | L2 = ' + d.phaseLoads[1].toFixed(1) + ' Amp. | L3 = ' + d.phaseLoads[2].toFixed(1) + ' Amp.', LW);
             pdf.addImage(pwrImg, 'PNG', 11, 33, 275, 123.8);
 
-            const totalPages = pdf.getNumberOfPages();
-            pdf.setPage(signalPage);
-            pdfTitleBlock(pdf, LW, LH, projName, signalPage, totalPages);
-            pdf.setPage(powerPage);
-            pdfTitleBlock(pdf, LW, LH, projName, powerPage, totalPages);
-
+            return { signalPage, powerPage };
         }
 
         function drawPlanPDF(pdf, d) {
@@ -1797,9 +1794,15 @@
             const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
             drawPlanPDF(pdf, d);
-            drawDiagramPDF(pdf, d);
+            const { signalPage, powerPage } = drawSignalPowerPDF(pdf, d);
+            drawListPDF(pdf, d);
 
             const totalPages = pdf.getNumberOfPages();
+
+            pdf.setPage(signalPage);
+            pdfTitleBlock(pdf, 297, 210, projName, signalPage, totalPages);
+            pdf.setPage(powerPage);
+            pdfTitleBlock(pdf, 297, 210, projName, powerPage, totalPages);
 
             pdf.setPage(1);
             pdf.setFont('helvetica', 'normal');
