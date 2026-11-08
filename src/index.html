@@ -851,7 +851,9 @@
             const gridW = ((d.redunPorts || d.redunUnit) ? d.ctrl.ports : halfPorts) * 15;
             const unitW = gridW + 44, unitH = 78, gapU = 10;
             const unitsPerRow = Math.max(1, Math.floor((x1 - x0 - 40) / (unitW + gapU)));
-            const rowsU = Math.ceil(d.units / unitsPerRow);
+            const rowsU = (d.redunUnit || d.redunPorts)
+                ? Math.ceil(d.unitsMain / unitsPerRow) * 2
+                : Math.ceil(d.units / unitsPerRow);
 
             let wallLeft, wallRight, bottomReserve;
             if (type === 'sig') {
@@ -974,17 +976,27 @@
             });
 
             if (type === 'sig') {
+                const mainRows = (d.redunUnit || d.redunPorts) ? Math.ceil(d.unitsMain / unitsPerRow) : 0;
+                const layoutUnit = (u) => {
+                    let isBk, idx;
+                    if (d.redunUnit) { isBk = (u % 2 === 1); idx = Math.floor(u / 2); }
+                    else if (d.redunPorts) { isBk = u >= d.unitsMain; idx = isBk ? (u - d.unitsMain) : u; }
+                    else { isBk = false; idx = u; }
+                    const row = Math.floor(idx / unitsPerRow) + (isBk ? mainRows : 0);
+                    const col = idx % unitsPerRow;
+                    const rowUnits = Math.min(unitsPerRow, d.unitsMain - Math.floor(idx / unitsPerRow) * unitsPerRow);
+                    const rowW = rowUnits * (unitW + gapU) - gapU;
+                    return { isBk, row, col, rowUnits, rowW };
+                };
                 const chainStart = [];
                 let acc = 0;
                 for (let u = 0; u < d.unitsMain; u++) { chainStart.push(acc); acc += d.chainsPerUnit[u]; }
                 for (let u = 0; u < d.units; u++) {
                     const isBk = d.redunUnit ? (u % 2 === 1) : (d.redunPorts ? u >= d.unitsMain : false);
                     const mu = d.redunUnit ? Math.floor(u / 2) : (d.redunPorts ? u % d.unitsMain : u);
-                    const row = Math.floor(u / unitsPerRow);
-                    const rowUnits = Math.min(unitsPerRow, d.units - row * unitsPerRow);
-                    const rowW = rowUnits * (unitW + gapU) - gapU;
-                    const ux = (x0 + x1) / 2 - rowW / 2 + (u % unitsPerRow) * (unitW + gapU);
-                    const uy = wy + hPx + 52 + row * (unitH + gapU);
+                    const lu = layoutUnit(u);
+                    const ux = (x0 + x1) / 2 - lu.rowW / 2 + lu.col * (unitW + gapU);
+                    const uy = wy + hPx + 52 + lu.row * (unitH + gapU);
                     ctx.fillStyle = '#FBFAF7';
                     ctx.fillRect(ux, uy, unitW, unitH);
                     ctx.strokeStyle = isBk ? '#C96A5A' : '#38342D'; ctx.lineWidth = 1; ctx.strokeRect(ux + 0.5, uy + 0.5, unitW - 1, unitH - 1);
@@ -1019,12 +1031,10 @@
 
                 const busY = wy + hPx + 8;
                 const unitPos = (u) => {
-                    const row = Math.floor(u / unitsPerRow);
-                    const rowUnits = Math.min(unitsPerRow, d.units - row * unitsPerRow);
-                    const rowW = rowUnits * (unitW + gapU) - gapU;
+                    const lu = layoutUnit(u);
                     return {
-                        ux: (x0 + x1) / 2 - rowW / 2 + (u % unitsPerRow) * (unitW + gapU),
-                        uy: wy + hPx + 52 + row * (unitH + gapU)
+                        ux: (x0 + x1) / 2 - lu.rowW / 2 + lu.col * (unitW + gapU),
+                        uy: wy + hPx + 52 + lu.row * (unitH + gapU)
                     };
                 };
                 for (let g = 0; g < d.chainsMain; g++) {
