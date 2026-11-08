@@ -371,8 +371,8 @@
             let ratioVal=w/h;
             document.getElementById('liveRatio').textContent=ratioVal.toFixed(4);
             let ratioMode;
-            if (ratioVal >= 1.62 && ratioVal <= 1.9) ratioMode = '169';
-            else if (ratioVal >= 1.2 && ratioVal < 1.62) ratioMode = '43';
+            if (ratioVal >= 1.68 && ratioVal <= 1.88) ratioMode = '169';
+            else if (ratioVal >= 1.2 && ratioVal < 1.45) ratioMode = '43';
             else ratioMode = 'custom';
             document.getElementById('chip169').className='ratio-chip'+(ratioMode==='169'?' on':'');
             document.getElementById('chip43').className='ratio-chip'+(ratioMode==='43'?' on':'');
