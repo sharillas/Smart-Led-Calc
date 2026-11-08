@@ -1919,7 +1919,7 @@
             diagDraw();
             if (location.hash === '#diagram') showView('diagram');
             loadLogos();
-            if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !window.__TAURI__) {
                 navigator.serviceWorker.register('sw.js').catch(function(){});
             }
         };
