@@ -383,18 +383,7 @@
 
             let canvas=document.getElementById('ledCanvas');
             if(canvas){
-                let ctx=canvas.getContext('2d');
-                let maxSize=260, ratio=w/h, cw, ch;
-                if(ratio>1.5){cw=maxSize;ch=maxSize/ratio;}
-                else if(ratio<0.67){ch=maxSize;cw=maxSize*ratio;}
-                else{cw=maxSize*ratio/1.5;ch=maxSize/1.5;}
-                canvas.width=cw+50;canvas.height=ch+50;
-                ctx.fillStyle='#14120E';ctx.fillRect(0,0,canvas.width,canvas.height);
-                let tileW=cw/tw, tileH=ch/th;
-                for(let i=0;i<tw;i++){for(let j=0;j<th;j++){ctx.fillStyle=(i+j)%2===0?'#2A2620':'#332E26';ctx.fillRect(25+i*tileW,25+j*tileH,tileW-1,tileH-1);}}
-                ctx.strokeStyle='#C96A5A';ctx.lineWidth=3;ctx.strokeRect(25,25,cw,ch);
-                ctx.fillStyle='#F1F5F9';ctx.font='500 11px Consolas';ctx.textAlign='center';
-                ctx.fillText(tw+' tiles',25+cw/2,20); ctx.fillText(th+' tiles',cw+42,25+ch/2);
+                drawCalcPlanCanvas(canvas, tw, th, w, h);
                 document.getElementById('canvasWidth').textContent=w.toFixed(1)+'m';
                 document.getElementById('canvasHeight').textContent=h.toFixed(1)+'m';
                 document.getElementById('canvasTiles').textContent=tt+' tiles';
@@ -443,97 +432,162 @@
         let t;
         function debouncedUpdate(){clearTimeout(t);t=setTimeout(updateAll,100);}
 
+        // ===== PLANO DE ECRÃS (AutoCAD) — página Calcular =====
+        function _arrowH(ctx, x1, x2, y) {
+            ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1 + 7, y - 3.5); ctx.lineTo(x1 + 7, y + 3.5); ctx.closePath(); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x2 - 7, y - 3.5); ctx.lineTo(x2 - 7, y + 3.5); ctx.closePath(); ctx.fill();
+        }
+        function _arrowV(ctx, x, y1, y2) {
+            ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x - 3.5, y1 + 7); ctx.lineTo(x + 3.5, y1 + 7); ctx.closePath(); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(x, y2); ctx.lineTo(x - 3.5, y2 - 7); ctx.lineTo(x + 3.5, y2 - 7); ctx.closePath(); ctx.fill();
+        }
+
+        function drawCalcPlanCanvas(canvas, tw, th, wM, hM) {
+            const W = 400, H = 310;
+            canvas.width = W; canvas.height = H;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#4A4A4A';
+            ctx.fillRect(0, 0, W, H);
+            ctx.strokeStyle = '#5E5E5E'; ctx.lineWidth = 1;
+            ctx.beginPath();
+            for (let x = 0; x <= W; x += 20) { ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, H); }
+            for (let y = 0; y <= H; y += 20) { ctx.moveTo(0, y + 0.5); ctx.lineTo(W, y + 0.5); }
+            ctx.stroke();
+
+            const mL = 62, mR = 74, mT = 54, mB = 82;
+            const areaW = W - mL - mR, areaH = H - mT - mB;
+            const ratio = wM / hM;
+            let sw = areaW, sh = sw / ratio;
+            if (sh > areaH) { sh = areaH; sw = sh * ratio; }
+            const sx = mL + (areaW - sw) / 2;
+            const sy = mT;
+
+            const tileW = sw / tw, tileH = sh / th;
+            ctx.fillStyle = '#1E1B16';
+            ctx.fillRect(sx, sy, sw, sh);
+            for (let i = 0; i < tw; i++) {
+                for (let j = 0; j < th; j++) {
+                    ctx.fillStyle = (i + j) % 2 === 0 ? '#3A352D' : '#413C32';
+                    ctx.fillRect(sx + i * tileW + 0.5, sy + j * tileH + 0.5, tileW - 1, tileH - 1);
+                }
+            }
+            ctx.strokeStyle = '#C96A5A'; ctx.lineWidth = 2.5;
+            ctx.strokeRect(sx, sy, sw, sh);
+
+            ctx.fillStyle = '#FFFFFF'; ctx.font = '600 13px Consolas, monospace'; ctx.textAlign = 'center';
+            ctx.fillText('LED WALL · ' + wM.toFixed(2).replace('.', ',') + ' × ' + hM.toFixed(2).replace('.', ',') + ' m', W / 2, sy - 16);
+
+            ctx.fillStyle = '#E7E2D6'; ctx.font = '10px Consolas, monospace';
+            ctx.fillText(tw + ' × ' + th + ' tiles · ' + (tw * 192) + ' × ' + (th * 192) + ' px', W / 2, sy - 2);
+
+            const dc = '#D8D3C8';
+            ctx.strokeStyle = dc; ctx.fillStyle = dc; ctx.lineWidth = 1;
+
+            const cy = sy + sh + 34;
+            ctx.beginPath();
+            ctx.moveTo(sx, sy + sh); ctx.lineTo(sx, cy);
+            ctx.moveTo(sx + sw, sy + sh); ctx.lineTo(sx + sw, cy);
+            ctx.moveTo(sx, cy); ctx.lineTo(sx + sw, cy);
+            ctx.stroke();
+            _arrowH(ctx, sx, sx + sw, cy);
+            ctx.font = '11px Consolas, monospace';
+            ctx.fillText(wM.toFixed(1).replace('.', ',') + ' m', sx + sw / 2, cy - 4);
+
+            const vx = sx + sw + 30;
+            ctx.beginPath();
+            ctx.moveTo(sx + sw, sy); ctx.lineTo(vx, sy);
+            ctx.moveTo(sx + sw, sy + sh); ctx.lineTo(vx, sy + sh);
+            ctx.moveTo(vx, sy); ctx.lineTo(vx, sy + sh);
+            ctx.stroke();
+            _arrowV(ctx, vx, sy, sy + sh);
+            ctx.save();
+            ctx.translate(vx - 4, sy + sh / 2); ctx.rotate(-Math.PI / 2);
+            ctx.fillText(hM.toFixed(1).replace('.', ',') + ' m', 0, 0);
+            ctx.restore();
+        }
+
         async function generatePDF(){
             try{
                 const { jsPDF } = window.jspdf;
-                let pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-                let d = new Date();
-                let pageW = 210, pageH = 297, m = 15;
-                let y = m;
-
-                pdf.setFillColor(30, 30, 30); pdf.rect(0, 0, pageW, 28, "F");
-                pdf.setFontSize(18); pdf.setTextColor(255, 255, 255); pdf.setFont("helvetica", "bold");
-                pdf.text("SmartChoice LED Calculator", m, 14);
-                pdf.setFontSize(8); pdf.setTextColor(180, 180, 180); pdf.setFont("helvetica", "normal");
-                pdf.text("Relatorio Tecnico - " + d.toLocaleDateString("pt-PT") + " " + d.toLocaleTimeString("pt-PT"), m, 22);
-
-                y = 38;
-                let w = document.getElementById("width").value;
-                let h = document.getElementById("height").value;
-                let tw = Math.ceil((parseFloat(w)*1000)/500);
-                let th = Math.ceil((parseFloat(h)*1000)/500);
-                let tt = tw * th;
-                let rw = tw * 192;
-                let rh = th * 192;
-
-                pdf.setDrawColor(80, 80, 80); pdf.setLineWidth(0.3);
-                pdf.setFontSize(11); pdf.setTextColor(50, 50, 50); pdf.setFont("helvetica", "bold");
-                pdf.text("DIMENSOES DO LED", m, y); y += 5;
-                pdf.line(m, y, pageW - m, y); y += 6;
-
-                pdf.setFont("helvetica", "normal"); pdf.setFontSize(10);
-                let dados = [
-                    ["Comprimento", w + " m"], ["Altura", h + " m"],
-                    ["Tiles (Largura x Altura)", tw + " x " + th], ["Total de Tiles", tt + " unidades"],
-                    ["Resolucao", rw + " x " + rh + " px"], ["Area", (parseFloat(w)*parseFloat(h)).toFixed(1) + " m²"],
-                    ["Peso Total", (tt * 9) + " kg"], ["Marca", document.getElementById("selectedBrand").textContent]
-                ];
-                dados.forEach(d => {
-                    pdf.setFont("helvetica", "bold"); pdf.setTextColor(50, 50, 50); pdf.text(d[0], m, y);
-                    pdf.setFont("helvetica", "normal"); pdf.setTextColor(80, 80, 80); pdf.text(d[1], m + 70, y);
-                    y += 6;
-                });
-                y += 4;
-
-                pdf.setFontSize(11); pdf.setTextColor(50, 50, 50); pdf.setFont("helvetica", "bold");
-                pdf.text("ENERGIA", m, y); y += 5;
-                pdf.line(m, y, pageW - m, y); y += 6;
-                pdf.setFont("helvetica", "normal"); pdf.setFontSize(10);
-                let pot = document.getElementById("totalPowerWatts").textContent;
-                let amp = document.getElementById("totalAmps").textContent;
-                [["Potencia Total", pot + " W"], ["Amperes Total", amp + " A"], ["Amperes por Fase (L1/L2/L3)", document.getElementById("currentL1").textContent + " A"]].forEach(d => {
-                    pdf.setFont("helvetica", "bold"); pdf.setTextColor(50, 50, 50); pdf.text(d[0], m, y);
-                    pdf.setFont("helvetica", "normal"); pdf.setTextColor(80, 80, 80); pdf.text(d[1], m + 70, y);
-                    y += 6;
-                });
-                y += 4;
-
-                pdf.setFontSize(11); pdf.setTextColor(50, 50, 50); pdf.setFont("helvetica", "bold");
-                pdf.text("CONTROLADORES", m, y); y += 5;
-                pdf.line(m, y, pageW - m, y); y += 6;
-                pdf.setFont("helvetica", "normal"); pdf.setFontSize(10);
-                ["novastar4k","novastarR5","mx40pro"].forEach(id => {
-                    let name = id==="novastar4k"?"MCTRL 4K (max 128 tiles)":id==="novastarR5"?"MCTRL R5 (max 64 tiles)":"MX40 PRO (max 160 tiles)";
-                    let units = document.getElementById(id+"Units").textContent;
-                    let tag = document.getElementById(id+"Recommended").textContent;
-                    pdf.setFont("helvetica", "bold"); pdf.setTextColor(50, 50, 50); pdf.text(name, m, y);
-                    pdf.setFont("helvetica", "normal"); pdf.setTextColor(80, 80, 80); pdf.text(units + " unidades - " + tag, m + 90, y);
-                    y += 6;
-                });
-
-                y += 6;
-                pdf.setFontSize(10); pdf.setTextColor(50, 50, 50); pdf.setFont("helvetica", "bold");
-                pdf.text("CONFIGURACAO VISUAL: " + tw + " x " + th + " tiles", m, y); y += 4;
-                let gridX = m, gridY = y, cellSize = Math.min(8, 140/tw, 140/th);
-                let gridW = tw * cellSize, gridH = th * cellSize;
-                pdf.setDrawColor(60, 60, 60); pdf.setLineWidth(0.2);
-                for(let i = 0; i <= tw; i++) { pdf.line(gridX + i*cellSize, gridY, gridX + i*cellSize, gridY + gridH); }
-                for(let i = 0; i <= th; i++) { pdf.line(gridX, gridY + i*cellSize, gridX + gridW, gridY + i*cellSize); }
-                pdf.setDrawColor(30, 30, 30); pdf.setLineWidth(0.8);
-                pdf.rect(gridX, gridY, gridW, gridH);
-                pdf.setFontSize(7); pdf.setTextColor(100, 100, 100); pdf.setFont("helvetica", "normal");
-                pdf.text(tw + " tiles", gridX + gridW/2, gridY - 2, { align: "center" });
-                pdf.text(th + " tiles", gridX + gridW + 3, gridY + gridH/2 + 2);
-                y = gridY + gridH + 10;
-
-                pdf.setDrawColor(60, 60, 60); pdf.setLineWidth(0.5);
-                pdf.line(m, pageH - 18, pageW - m, pageH - 18);
-                pdf.setFontSize(7); pdf.setTextColor(120, 120, 120);
-                pdf.text("Smartchoice (c)2026 - All rights reserved", m, pageH - 12);
-                pdf.text("Smartchoice LED Calculator by Nelson Teixeira", pageW - m, pageH - 12, { align: "right" });
-
-                pdf.save("SmartChoice-LED-Report.pdf");
+                if (!LOGO_REDONDO || !LOGO_BANNER) await loadLogos();
+                let pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+                drawCalcPlanPDF(pdf);
+                pdf.save("Smart-Led-Calc_Plano_Ecrans.pdf");
             }catch(e){alert("Erro: " + e.message);}
+        }
+
+        function drawCalcPlanPDF(pdf) {
+            const W = 297, H = 210;
+            const w = parseFloat(document.getElementById('width').value) || 5;
+            const h = parseFloat(document.getElementById('height').value) || 3;
+            const tw = Math.ceil((w * 1000) / 500), th = Math.ceil((h * 1000) / 500);
+            const tt = tw * th;
+            const brandName = document.getElementById('selectedBrand').textContent;
+
+            pdf.setDrawColor(26, 24, 21); pdf.setLineWidth(0.7);
+            pdf.rect(8, 8, 281, 194, 'S');
+            pdf.setLineWidth(0.2); pdf.rect(11, 11, 275, 188, 'S');
+
+            pdfHeader(pdf, 'SmartChoice LED Calculator', 'Plano de Ecrãs — LED Wall (vista frontal)', W);
+
+            const groundY = 150;
+            const leftX = 20, rightX = W - 21;
+            pdf.setDrawColor(60, 55, 48); pdf.setLineWidth(0.7);
+            pdf.line(leftX, groundY, rightX, groundY);
+
+            const areaW = rightX - leftX, maxH = groundY - 40;
+            let tile = Math.min(areaW / tw, maxH / th);
+            const sw = tw * tile, sh = th * tile;
+            const ox = leftX + (areaW - sw) / 2;
+            const y = groundY - sh;
+
+            pdf.setFillColor(225, 237, 251);
+            pdf.rect(ox, y, sw, sh, 'F');
+            pdf.setDrawColor(201, 196, 184); pdf.setLineWidth(0.12);
+            const gx = Math.max(2, Math.round(tw / 2)), gy = Math.max(2, Math.round(th / 2));
+            for (let k = 1; k < gx; k++) pdf.line(ox + sw * k / gx, y, ox + sw * k / gx, y + sh);
+            for (let k = 1; k < gy; k++) pdf.line(ox, y + sh * k / gy, ox + sw, y + sh * k / gy);
+            pdf.setDrawColor(125, 119, 107); pdf.setLineWidth(0.4);
+            pdf.rect(ox, y, sw, sh, 'S');
+
+            const cx = ox + sw / 2;
+            pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9.6); pdf.setTextColor(26, 24, 21);
+            pdf.text('ECRAN 1', cx, y + sh * 0.40, { align: 'center' });
+            pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7.4); pdf.setTextColor(74, 68, 58);
+            pdf.text((tw * 192) + ' × ' + (th * 192) + ' px', cx, y + sh * 0.57, { align: 'center' });
+            pdf.setFontSize(6.8); pdf.setTextColor(110, 103, 90);
+            pdf.text(tt + ' tiles (' + tw + '×' + th + ')', cx, y + sh * 0.74, { align: 'center' });
+
+            const dimColor = () => { pdf.setDrawColor(60, 55, 48); pdf.setFillColor(60, 55, 48); };
+            const arrowH = (x1, x2, yy) => {
+                dimColor(); pdf.setLineWidth(0.18); pdf.line(x1, yy, x2, yy);
+                pdf.triangle(x1, yy, x1 + 1.6, yy - 0.8, x1 + 1.6, yy + 0.8, 'F');
+                pdf.triangle(x2, yy, x2 - 1.6, yy - 0.8, x2 - 1.6, yy + 0.8, 'F');
+            };
+            const arrowV = (x, y1, y2) => {
+                dimColor(); pdf.setLineWidth(0.18); pdf.line(x, y1, x, y2);
+                pdf.triangle(x, y1, x - 0.8, y1 + 1.6, x + 0.8, y1 + 1.6, 'F');
+                pdf.triangle(x, y2, x - 0.8, y2 - 1.6, x + 0.8, y2 - 1.6, 'F');
+            };
+            const fmtM = (v) => v.toFixed(1).replace('.', ',') + ' m';
+            const extLine = (x, yTop, yBot) => { dimColor(); pdf.setLineWidth(0.12); pdf.line(x, yTop, x, yBot); };
+
+            const dimY1 = groundY + 9;
+            extLine(ox, groundY, dimY1); extLine(ox + sw, groundY, dimY1);
+            arrowH(ox, ox + sw, dimY1);
+            pdf.setFontSize(7.4); pdf.setTextColor(60, 55, 48);
+            pdf.text(fmtM(w), ox + sw / 2, dimY1 - 1.2, { align: 'center' });
+
+            const vx = ox + sw + 10;
+            dimColor(); pdf.setLineWidth(0.12);
+            pdf.line(ox + sw, y, vx, y);
+            pdf.line(ox + sw, groundY, vx, groundY);
+            arrowV(vx, y, groundY);
+            pdf.setFontSize(7.4);
+            pdf.text(fmtM(h), vx - 1.5, y + sh / 2, { angle: 90 });
+
+            pdfTitleBlock(pdf, W, H, brandName, 1, 1);
         }
 
         // ================= NAVEGAÇÃO =================
