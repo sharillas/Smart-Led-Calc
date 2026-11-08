@@ -201,7 +201,7 @@
                     <div class="card-header"><h2><i class="fas fa-ruler"></i> Dimensões</h2><span class="card-badge">P2.6mm</span></div>
                     <div class="input-group"><label>Comprimento (m)</label><div class="input-wrapper"><i class="fas fa-arrows-alt-h"></i><input type="number" id="width" value="5" step="0.1" min="0.1" oninput="debouncedUpdate()"></div></div>
                     <div class="input-group"><label>Altura (m)</label><div class="input-wrapper"><i class="fas fa-arrows-alt-v"></i><input type="number" id="height" value="3" step="0.1" min="0.1" oninput="debouncedUpdate()"></div></div>
-                    <div class="resolution-box"><div class="resolution-title">RESOLUÇÃO DO LED SCREEN</div><div class="resolution-value" id="liveResolution">1920 x 1080</div><div class="resolution-ratio">Ratio: <span id="liveRatio">1.7778</span></div><div class="ratio-indicators"><span class="ratio-chip" id="chip169">16:9</span><span class="ratio-chip" id="chip43">4:3</span></div></div>
+                    <div class="resolution-box"><div class="resolution-title">RESOLUÇÃO DO LED SCREEN</div><div class="resolution-value" id="liveResolution">1920 x 1080</div><div class="resolution-ratio">Ratio: <span id="liveRatio">1.7778</span></div><div class="ratio-indicators"><span class="ratio-chip" id="chip169">16:9</span><span class="ratio-chip" id="chip43">4:3</span><span class="ratio-chip" id="chipCustom">Custom</span></div></div>
                     <div class="result-box">
                         <div class="result-row"><span class="result-label">Área</span><span class="result-value" id="totalArea">15.0 m²</span></div>
                         <div class="result-row"><span class="result-label">Tiles</span><span class="result-value" id="totalTilesResult">60</span></div>
@@ -370,10 +370,13 @@
             document.getElementById('liveResolution').textContent=rw+' x '+rh;
             let ratioVal=w/h;
             document.getElementById('liveRatio').textContent=ratioVal.toFixed(4);
-            const r169=16/9, r43=4/3;
-            const closer169=Math.abs(ratioVal-r169)<=Math.abs(ratioVal-r43);
-            document.getElementById('chip169').className='ratio-chip'+(closer169?' on':'');
-            document.getElementById('chip43').className='ratio-chip'+(closer169?'':' on');
+            let ratioMode;
+            if (ratioVal > 1.9) ratioMode = 'custom';
+            else if (ratioVal > 1.5) ratioMode = '169';
+            else ratioMode = '43';
+            document.getElementById('chip169').className='ratio-chip'+(ratioMode==='169'?' on':'');
+            document.getElementById('chip43').className='ratio-chip'+(ratioMode==='43'?' on':'');
+            document.getElementById('chipCustom').className='ratio-chip'+(ratioMode==='custom'?' on':'');
             document.getElementById('totalArea').textContent=(w*h).toFixed(1)+' m²';
             document.getElementById('totalTilesResult').textContent=tt;
             document.getElementById('totalWeightResult').textContent=(tt*TILE_WEIGHT_KG)+' kg';
@@ -1928,7 +1931,7 @@
             diagDraw();
             if (location.hash === '#diagram') showView('diagram');
             loadLogos();
-            if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !window.__TAURI__) {
+            if ('serviceWorker' in navigator && location.protocol.startsWith('http') && !(window.__TAURI__ || window.__TAURI_INTERNALS__)) {
                 navigator.serviceWorker.register('sw.js').catch(function(){});
             }
         };
