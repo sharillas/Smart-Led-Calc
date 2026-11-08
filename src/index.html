@@ -1020,7 +1020,7 @@
                         }
                     } else {
                         for (let i = 0; i < d.ctrl.ports; i++) {
-                            const px = ux + unitW / 2 - gridW / 2 + 7.5 + i * 15;
+                            const px = ux + unitW / 2 - gridW / 2 + 7.5 + (i % halfPorts) * 15;
                             const chainIdx = chainStart[mu] + i;
                             const used = i < d.chainsPerUnit[mu];
                             diagDrawPort(ctx, px, uy + 44 + (i < halfPorts ? 0 : 16), used ? dcol(chainIdx) : '#14120E', used ? i + 1 : 0);
