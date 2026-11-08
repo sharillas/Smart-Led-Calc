@@ -154,7 +154,7 @@
         #pageDiagram .cell.g .v { color: var(--green); }
         #pageDiagram .cell.r .v { color: var(--red); }
         #pageDiagram #cvWrap { overflow: auto; max-height: 80vh; border: 1px solid var(--line); border-radius: 4px; background: #4A4A4A; }
-        #pageDiagram canvas { display: block; background: #4A4A4A; }
+        #pageDiagram canvas { display: block; max-width: none; background: #4A4A4A; }
         #pageDiagram .legend { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 12px; font-family: var(--mono); font-size: 0.8rem; color: var(--ink2); letter-spacing: 0.03em; }
         #pageDiagram .sw { display: inline-block; width: 10px; height: 10px; border: 1px solid rgba(231,226,214,0.35); margin-right: 6px; vertical-align: -1px; }
         #pageDiagram .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -1905,7 +1905,7 @@
             cvWrap.scrollLeft = mx * ratio - (e.clientX - rect.left);
             cvWrap.scrollTop = my * ratio - (e.clientY - rect.top);
             diagDraw();
-        }, { passive: false });
+        }, { passive: false, capture: true });
         window.addEventListener('resize', function() {
             if (document.getElementById('pageDiagram').offsetParent !== null) { applyZoomSize(); diagDraw(); }
         });
