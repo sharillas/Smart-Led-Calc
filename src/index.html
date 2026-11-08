@@ -196,6 +196,10 @@
         </div>
 
         <div id="pageCalc">
+            <div style="margin: 0 0 14px 0; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <label style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;">Nome do projeto</label>
+                <input type="text" id="projectNameCalc" placeholder="ex.: IAPMEI Batalha 2026" style="width:340px; max-width:100%;">
+            </div>
             <div class="calculator-grid">
                 <div class="card">
                     <div class="card-header"><h2><i class="fas fa-ruler"></i> Dimensões</h2><span class="card-badge">P2.6mm</span></div>
@@ -523,7 +527,7 @@
             const h = parseFloat(document.getElementById('height').value) || 3;
             const tw = Math.ceil((w * 1000) / 500), th = Math.ceil((h * 1000) / 500);
             const tt = tw * th;
-            const brandName = document.getElementById('selectedBrand').textContent;
+            const projName = (document.getElementById('projectNameCalc').value || '').trim() || '(sem nome)';
 
             pdf.setDrawColor(26, 24, 21); pdf.setLineWidth(0.7);
             pdf.rect(8, 8, 281, 194, 'S');
@@ -588,7 +592,8 @@
             pdf.setFontSize(7.4);
             pdf.text(fmtM(h), vx - 1.5, y + sh / 2, { angle: 90 });
 
-            pdfTitleBlock(pdf, W, H, brandName, 1, 1);
+            const scale = '1:' + Math.round(500 / tile);
+            pdfTitleBlock(pdf, W, H, projName, 1, 1, scale);
         }
 
         // ================= NAVEGAÇÃO =================
@@ -1437,7 +1442,7 @@
         }
 
         // ---- carimbo (bloco de info) com banner a toda a largura ----
-        function pdfTitleBlock(pdf, pageW, pageH, projName, pageNum, totalPages) {
+        function pdfTitleBlock(pdf, pageW, pageH, projName, pageNum, totalPages, scale) {
             const M = 11, tbW = 110, tbH = 42;
             const bx = pageW - M - tbW, by = pageH - M - tbH;
             if (LOGO_BANNER) pdf.addImage(LOGO_BANNER, 'PNG', bx, by, tbW, 24);
@@ -1455,7 +1460,7 @@
             lbl('DATA', bx + 58, by + 28);
             val(new Date().toLocaleDateString('pt-PT'), bx + 58, by + 31);
             lbl('ESCALA', bx + 83, by + 28);
-            val('—', bx + 83, by + 31);
+            val(scale || '—', bx + 83, by + 31);
             lbl('DESENHADO', bx + 3, by + 37);
             val('Nelson Teixeira', bx + 3, by + 40);
             lbl('FOLHA', bx + 58, by + 37);
