@@ -328,8 +328,7 @@
                 <div class="card-head">
                     <h2 class="section-title">Lista de Material — Picking List</h2>
                     <div style="display:flex;gap:8px;">
-                        <button class="btn-pdf" onclick="generatePlanPDF()">Exportar plano de ecrãs (PDF)</button>
-                        <button class="btn-pdf" onclick="generateDiagramPDF()">Exportar PDF (lista + sinal + power)</button>
+                        <button class="btn-pdf" onclick="exportProject()"><i class="fas fa-file-pdf"></i> Export Project</button>
                     </div>
                 </div>
                 <table>
@@ -1385,11 +1384,8 @@
 
 
 
-        function generateDiagramPDF() {
-            const d = diagCompute();
-            if (!window.jspdf) { alert('jsPDF não carregado'); return; }
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        function drawDiagramPDF(pdf, d) {
+            pdf.addPage('a4', 'portrait');
             const W = 210, H = 297, M = 12, cw = W - M * 2;
             let y = M;
 
@@ -1575,27 +1571,10 @@
             pdf.setPage(powerPage);
             pdfTitleBlock(pdf, LW, LH, projName, powerPage, totalPages);
 
-            const dataCurta = new Date().toLocaleDateString('pt-PT');
-            for (let p = 1; p <= totalPages; p++) {
-                pdf.setPage(p);
-                const pw = pdf.internal.pageSize.getWidth();
-                pdf.setFontSize(8);
-                pdf.setTextColor(110, 103, 90);
-                pdf.text('Folha ' + p + ' / ' + totalPages, pw - 15, 20, { align: 'right' });
-                pdf.setFontSize(7);
-                pdf.setTextColor(156, 148, 132);
-                pdf.text('Data: ' + dataCurta, pw - 15, 25, { align: 'right' });
-            }
-
-            pdf.save('Smart-Led-Calc_Montagem.pdf');
         }
 
-        function generatePlanPDF() {
-            const d = diagCompute();
-            if (!window.jspdf) { alert('jsPDF não carregado'); return; }
-            const { jsPDF } = window.jspdf;
+        function drawPlanPDF(pdf, d) {
             const projName = (document.getElementById('projectName').value || '').trim() || '(sem nome)';
-            const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
             const W = 297, H = 210, M = 12;
 
             // ---- moldura ----
@@ -1617,12 +1596,6 @@
             pdf.setFontSize(9);
             pdf.setTextColor(110, 103, 90);
             pdf.text('Plano de Ecrãs — LED Wall (vista frontal, espaçamento entre ecrãs: ' + d.gapM.toFixed(1).replace('.', ',') + ' m)', 15, 26.5);
-            pdf.setFontSize(8.5);
-            pdf.setTextColor(110, 103, 90);
-            pdf.text('Folha 1 / 1', W - 15, 19.5, { align: 'right' });
-            pdf.setFontSize(7);
-            pdf.setTextColor(156, 148, 132);
-            pdf.text('Data: ' + new Date().toLocaleDateString('pt-PT'), W - 15, 24, { align: 'right' });
 
             // ---- área de desenho (linha de chão em y=125) ----
             const groundY = 125;
@@ -1763,7 +1736,6 @@
             lbl('CONFERIDO', bx + 3, by + 37);
             val('____________', bx + 3, by + 40.5);
             lbl('FOLHA', bx + 58, by + 37);
-            val('1 / 1', bx + 58, by + 40.5);
             lbl('APROVADO', bx + 83, by + 37);
             val('______', bx + 83, by + 40.5);
 
@@ -1815,7 +1787,39 @@
             pdf.setTextColor(156, 148, 132);
             pdf.text('Copyright©2026 — All Rights Reserved — Nelson Teixeira', W / 2, 201, { align: 'center' });
 
-            pdf.save('Smart-Led-Calc_Plano-Ecrans_' + projName.replace(/[^\w\d\-]+/g, '_') + '.pdf');
+        }
+
+        function exportProject() {
+            const d = diagCompute();
+            if (!window.jspdf) { alert('jsPDF não carregado'); return; }
+            const { jsPDF } = window.jspdf;
+            const projName = (document.getElementById('projectName').value || '').trim() || '(sem nome)';
+            const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+            drawPlanPDF(pdf, d);
+            drawDiagramPDF(pdf, d);
+
+            const totalPages = pdf.getNumberOfPages();
+
+            pdf.setPage(1);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7);
+            pdf.setTextColor(26, 24, 21);
+            pdf.text('1 / ' + totalPages, 234, 197.5);
+
+            const dataCurta = new Date().toLocaleDateString('pt-PT');
+            for (let p = 1; p <= totalPages; p++) {
+                pdf.setPage(p);
+                const pw = pdf.internal.pageSize.getWidth();
+                pdf.setFontSize(8);
+                pdf.setTextColor(110, 103, 90);
+                pdf.text('Folha ' + p + ' / ' + totalPages, pw - 15, 20, { align: 'right' });
+                pdf.setFontSize(7);
+                pdf.setTextColor(156, 148, 132);
+                pdf.text('Data: ' + dataCurta, pw - 15, 25, { align: 'right' });
+            }
+
+            pdf.save('Smart-Led-Calc_Project_' + projName.replace(/[^\w\d\-]+/g, '_') + '.pdf');
         }
 
         // ================= ATUALIZAÇÕES =================
