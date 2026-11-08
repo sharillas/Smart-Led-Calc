@@ -531,8 +531,9 @@
 
             pdfHeader(pdf, 'SmartChoice LED Calculator', 'Plano de Ecrãs — LED Wall (vista frontal)', W);
 
-            const groundY = 150;
-            const leftX = 20, rightX = W - 21;
+            const tbX = W - 11 - 110, tbY = H - 11 - 42;   // canto superior-esquerdo do carimbo (bloco de info)
+            const groundY = tbY - 24;                      // cota horizontal fica acima do carimbo
+            const leftX = 20, rightX = tbX - 16;           // cota vertical fica à esquerda do carimbo
             pdf.setDrawColor(60, 55, 48); pdf.setLineWidth(0.7);
             pdf.line(leftX, groundY, rightX, groundY);
 
