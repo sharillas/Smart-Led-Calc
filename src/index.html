@@ -863,15 +863,25 @@
             }
             const top = 84;
             const tilePx = Math.min(34, (wallRight - wallLeft) / d.totalTw, (H - top - bottomReserve) / d.maxTh);
-            const wx = wallLeft, wy = top;
             const hPx = d.maxTh * tilePx;
+            const isFull = (x1 - x0) >= 1590;
+            const totalSpan = (d.totalTw + d.gapTiles * (d.secs.length - 1)) * tilePx;
+            const wx = wallLeft + Math.max(0, (wallRight - wallLeft - totalSpan) / 2);
+            let offsetY = 0;
+            if (isFull) {
+                const below = (type === 'sig')
+                    ? (52 + rowsU * unitH + (rowsU - 1) * gapU)
+                    : (158 + (d.socapex - 1) * 40);
+                offsetY = Math.max(0, (H - (top + hPx + below)) / 2 - 10);
+            }
+            const wy = top + offsetY;
 
             ctx.textAlign = 'left';
             ctx.textBaseline = 'alphabetic';
             ctx.fillStyle = type === 'sig' ? '#E3A857' : '#8FAE8B';
             ctx.font = '500 16px Consolas';
-            ctx.fillText(type === 'sig' ? 'SINAL' : 'POWER', x0 + 24, 32);
-            diagDrawLegend(ctx, x0 + 24, 52, type);
+            ctx.fillText(type === 'sig' ? 'SINAL' : 'POWER', x0 + 24, 32 + offsetY);
+            diagDrawLegend(ctx, x0 + 24, 52 + offsetY, type);
 
             const secLayout = [];
             let accX = 0;
