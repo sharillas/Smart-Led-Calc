@@ -1465,8 +1465,9 @@
             val('Nelson Teixeira', bx + 3, by + 40);
             lbl('FOLHA', bx + 58, by + 37);
             val(pageNum + ' / ' + totalPages, bx + 58, by + 40);
-            lbl('APROVADO', bx + 83, by + 37);
-            val('______', bx + 83, by + 40);
+            lbl('APROVADO POR', bx + 83, by + 37);
+            pdf.setFont('helvetica', 'normal'); pdf.setFontSize(5.5); pdf.setTextColor(26, 24, 21);
+            pdf.text('Direção Técnica Smartchoice', bx + 83, by + 40);
         }
 
 
@@ -1694,6 +1695,8 @@
             tile = Math.min((areaW - gaps * gapMM) / tilesW, maxH / maxTh);
             const totalW = tilesW * tile + gaps * gapMM;
             const totalH = maxTh * tile;
+            const scaleNum = 500 / tile;
+            const scaleTxt = '1:' + Math.round(scaleNum);
             const ox = leftX + (areaW - totalW) / 2;
 
             // linha de chão
@@ -1810,7 +1813,7 @@
             lbl('DATA', bx + 58, by + 15);
             val(new Date().toLocaleDateString('pt-PT'), bx + 58, by + 18.5);
             lbl('ESCALA', bx + 83, by + 15);
-            val('1:100', bx + 83, by + 18.5);
+            val(scaleTxt, bx + 83, by + 18.5);
             lbl('DESENHADO', bx + 3, by + 27);
             val('Nelson Teixeira', bx + 3, by + 30.5);
             lbl('Nº DES.', bx + 58, by + 27);
@@ -1820,8 +1823,9 @@
             lbl('CONFERIDO', bx + 3, by + 37);
             val('____________', bx + 3, by + 40.5);
             lbl('FOLHA', bx + 58, by + 37);
-            lbl('APROVADO', bx + 83, by + 37);
-            val('______', bx + 83, by + 40.5);
+            lbl('APROVADO POR', bx + 83, by + 37);
+            pdf.setFont('helvetica', 'normal'); pdf.setFontSize(5.5); pdf.setTextColor(26, 24, 21);
+            pdf.text('Direção Técnica Smartchoice', bx + 83, by + 40.5);
 
             // ---- NOTAS ----
             pdf.setDrawColor(26, 24, 21);
@@ -1864,13 +1868,14 @@
             pdf.text('4 m', 54, 195, { align: 'center' });
             pdf.setFontSize(6.8);
             pdf.setTextColor(156, 148, 132);
-            pdf.text('escala 1:100', 59, 189.5);
+            pdf.text('escala ' + scaleTxt, 59, 189.5);
 
             // ---- copyright ----
             pdf.setFontSize(6.2);
             pdf.setTextColor(156, 148, 132);
             pdf.text('Copyright©2026 — All Rights Reserved — Nelson Teixeira', W / 2, 201, { align: 'center' });
 
+            return scaleTxt;
         }
 
         function exportProject() {
@@ -1880,16 +1885,16 @@
             const projName = (document.getElementById('projectName').value || '').trim() || '(sem nome)';
             const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-            drawPlanPDF(pdf, d);
+            const scaleTxt = drawPlanPDF(pdf, d);
             const { signalPage, powerPage } = drawSignalPowerPDF(pdf, d);
             drawListPDF(pdf, d);
 
             const totalPages = pdf.getNumberOfPages();
 
             pdf.setPage(signalPage);
-            pdfTitleBlock(pdf, 297, 210, projName, signalPage, totalPages);
+            pdfTitleBlock(pdf, 297, 210, projName, signalPage, totalPages, scaleTxt);
             pdf.setPage(powerPage);
-            pdfTitleBlock(pdf, 297, 210, projName, powerPage, totalPages);
+            pdfTitleBlock(pdf, 297, 210, projName, powerPage, totalPages, scaleTxt);
 
             pdf.setPage(1);
             pdf.setFont('helvetica', 'normal');
