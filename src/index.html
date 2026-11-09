@@ -86,6 +86,8 @@
         .resolution-box { border-color: rgba(220,38,38,0.5); }
         .result-box { border-color: rgba(220,38,38,0.5); }
         .preview-label { font-family: var(--mono); font-size: 0.68rem; text-transform: uppercase; color: var(--ink3); letter-spacing: 0.12em; margin-bottom: 8px; }
+        .preview-frame { border: 2px solid var(--line2); border-radius: 4px; padding: 6px; background: var(--panel2); }
+        .preview-frame canvas { width: 100%; height: auto; display: block; }
         .resolution-value { font-family: var(--mono); font-size: 2rem; font-weight: 500; color: var(--green); }
         .resolution-title { font-family: var(--mono); font-size: 1.15rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #E5484D; margin-bottom: 8px; }
         .resolution-ratio { font-family: var(--mono); font-size: 0.88rem; color: var(--ink2); margin-top: 8px; }
@@ -245,7 +247,7 @@
                 </div>
             </div>
 
-            <div class="preview-box"><div class="preview-label">Pré-visualização</div><canvas id="ledCanvas" width="300" height="200"></canvas><div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:0.85rem;color:var(--text-muted);"><span id="canvasWidth">5.0m</span><span>×</span><span id="canvasHeight">3.0m</span><span style="color:var(--accent-1);font-weight:600;" id="canvasTiles">60 tiles</span></div></div>
+            <div class="preview-box"><div class="preview-label">Pré-visualização</div><div class="preview-frame"><canvas id="ledCanvas" width="300" height="200"></canvas></div><div style="display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:0.85rem;color:var(--text-muted);"><span id="canvasWidth">5.0m</span><span>×</span><span id="canvasHeight">3.0m</span><span style="color:var(--accent-1);font-weight:600;" id="canvasTiles">60 tiles</span></div></div>
 
             <div class="stock-table">
                 <h3><i class="fas fa-boxes"></i> Stock Disponível - P2.6mm INDOOR</h3>
@@ -453,9 +455,11 @@
         }
 
         function drawCalcPlanCanvas(canvas, tw, th, wM, hM) {
+            const S = 3;
             const W = 400, H = 310;
-            canvas.width = W; canvas.height = H;
+            canvas.width = W * S; canvas.height = H * S;
             const ctx = canvas.getContext('2d');
+            ctx.scale(S, S);
 
             ctx.fillStyle = '#F2F4F6';
             ctx.fillRect(0, 0, W, H);
