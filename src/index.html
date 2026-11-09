@@ -147,7 +147,7 @@
         #pageDiagram .zbtn:hover { border-color: var(--amber); color: var(--amber); }
         #pageDiagram .sec-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
         #pageDiagram .sec-row:last-child { border-bottom: none; }
-        #pageDiagram .sec-row .sidx { font-family: var(--mono); font-size: 0.75rem; color: var(--ink3); width: 46px; letter-spacing: 0.06em; }
+        #pageDiagram .sec-row .sidx { font-family: var(--mono); font-size: 0.75rem; color: var(--ink3); width: 74px; letter-spacing: 0.06em; white-space: nowrap; }
         #pageDiagram .sec-row input { width: 74px; background: var(--panel2); border: 1px solid var(--line2); color: var(--ink); padding: 8px 10px; border-radius: 3px; font-size: 0.95rem; font-family: var(--mono); outline: none; }
         #pageDiagram .sec-row input:focus { border-color: var(--amber); }
         #pageDiagram .sec-row .x { color: var(--ink3); font-family: var(--mono); font-size: 0.85rem; }
@@ -193,8 +193,8 @@
                 <div class="logo-text"><h1>SmartChoice LED Calculator</h1><p>LED Wall Calculator</p></div>
             </div>
             <div class="nav">
-                <button class="btn active" id="navCalc" onclick="showView('calc')"><i class="fas fa-calculator"></i> Calculadora</button>
-                <button class="btn featured" id="navDiagram" onclick="showView('diagram')"><i class="fas fa-th-large"></i> Calcular Ecran's Complexos</button>
+                <button class="btn active" id="navCalc" onclick="showView('calc')"><i class="fas fa-calculator"></i> Ecran's Simples</button>
+                <button class="btn featured" id="navDiagram" onclick="showView('diagram')"><i class="fas fa-th-large"></i> Múltiplos Ecran's</button>
             </div>
             <button class="btn" id="btnPdfCalc" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Exportar PDF</button>
         </div>
@@ -262,7 +262,7 @@
         <div id="pageDiagram">
             <div class="card">
                 <div class="card-head" style="margin-bottom:4px;">
-                    <h2 class="section-title">Configuração do Wall</h2>
+                    <h2 class="section-title">Configurar Ecran's</h2>
                 </div>
                 <div id="sectionsEditor"></div>
                 <div>
