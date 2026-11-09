@@ -69,6 +69,8 @@
         .input-wrapper i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink3); }
         .input-wrapper input { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--line2); border-radius: 3px; font-size: 1rem; background: var(--panel2); color: var(--ink); font-family: var(--mono); outline: none; }
         .input-wrapper input:focus { border-color: var(--amber); }
+        .project-name-input { padding: 12px 16px; border: 1px solid var(--line2); border-radius: 3px; background: var(--panel2); color: var(--ink); font-family: var(--mono); font-size: 1rem; outline: none; transition: border-color .12s; }
+        .project-name-input:focus { border-color: var(--amber); }
         .brand-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
         @media (max-width: 640px) { .brand-grid { grid-template-columns: repeat(2, 1fr); } }
         .brand-card { background: var(--panel2); border: 1px solid var(--line); border-radius: 4px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all 0.15s; }
@@ -160,8 +162,8 @@
         #pageDiagram .cell.a .v { color: var(--amber); }
         #pageDiagram .cell.g .v { color: var(--green); }
         #pageDiagram .cell.r .v { color: var(--red); }
-        #pageDiagram #cvWrap { overflow: auto; max-height: 80vh; border: 1px solid var(--line); border-radius: 4px; background: #4A4A4A; }
-        #pageDiagram canvas { display: block; max-width: none; background: #4A4A4A; }
+        #pageDiagram #cvWrap { overflow: auto; max-height: 80vh; border: 1px solid var(--line); border-radius: 4px; background: #F2F4F6; }
+        #pageDiagram canvas { display: block; max-width: none; background: #F2F4F6; }
         #pageDiagram .legend { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 12px; font-family: var(--mono); font-size: 0.8rem; color: var(--ink2); letter-spacing: 0.03em; }
         #pageDiagram .sw { display: inline-block; width: 10px; height: 10px; border: 1px solid rgba(31,41,55,0.35); margin-right: 6px; vertical-align: -1px; }
         #pageDiagram .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -199,7 +201,7 @@
         <div id="pageCalc">
             <div style="margin: 0 0 14px 0; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                 <label style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase;">Nome do projeto</label>
-                <input type="text" id="projectNameCalc" placeholder="ex.: IAPMEI Batalha 2026" style="width:340px; max-width:100%;">
+                <input type="text" id="projectNameCalc" class="project-name-input" placeholder="ex.: IAPMEI Batalha 2026" style="width:340px; max-width:100%;">
             </div>
             <div class="calculator-grid">
                 <div class="card">
@@ -271,7 +273,7 @@
                     <input type="number" id="gapD" value="0.5" min="0" step="0.1" style="width:110px;"> <span style="color:var(--text-muted);font-size:0.85rem;">m (1 tile = 0,5 m)</span>
                 </div>
                 <div class="field" style="margin-top:12px;"><label>Nome do projeto</label>
-                    <input type="text" id="projectName" placeholder="ex.: IAPMEI Batalha 2026" style="width:340px;">
+                    <input type="text" id="projectName" class="project-name-input" placeholder="ex.: IAPMEI Batalha 2026" style="width:340px;">
                 </div>
             </div>
 
@@ -452,9 +454,9 @@
             canvas.width = W; canvas.height = H;
             const ctx = canvas.getContext('2d');
 
-            ctx.fillStyle = '#4A4A4A';
+            ctx.fillStyle = '#F2F4F6';
             ctx.fillRect(0, 0, W, H);
-            ctx.strokeStyle = '#5E5E5E'; ctx.lineWidth = 1;
+            ctx.strokeStyle = '#C5CAD1'; ctx.lineWidth = 1;
             ctx.beginPath();
             for (let x = 0; x <= W; x += 20) { ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, H); }
             for (let y = 0; y <= H; y += 20) { ctx.moveTo(0, y + 0.5); ctx.lineTo(W, y + 0.5); }
@@ -469,24 +471,24 @@
             const sy = mT;
 
             const tileW = sw / tw, tileH = sh / th;
-            ctx.fillStyle = '#1E1B16';
+            ctx.fillStyle = '#D7DBE0';
             ctx.fillRect(sx, sy, sw, sh);
             for (let i = 0; i < tw; i++) {
                 for (let j = 0; j < th; j++) {
-                    ctx.fillStyle = (i + j) % 2 === 0 ? '#3A352D' : '#413C32';
+                    ctx.fillStyle = (i + j) % 2 === 0 ? '#D7DBE0' : '#C9CDD4';
                     ctx.fillRect(sx + i * tileW + 0.5, sy + j * tileH + 0.5, tileW - 1, tileH - 1);
                 }
             }
-            ctx.strokeStyle = '#C96A5A'; ctx.lineWidth = 2.5;
+            ctx.strokeStyle = '#DC2626'; ctx.lineWidth = 2.5;
             ctx.strokeRect(sx, sy, sw, sh);
 
-            ctx.fillStyle = '#FFFFFF'; ctx.font = '600 13px Consolas, monospace'; ctx.textAlign = 'center';
+            ctx.fillStyle = '#1F2937'; ctx.font = '600 13px Consolas, monospace'; ctx.textAlign = 'center';
             ctx.fillText('LED WALL · ' + wM.toFixed(2).replace('.', ',') + ' × ' + hM.toFixed(2).replace('.', ',') + ' m', W / 2, sy - 16);
 
-            ctx.fillStyle = '#E7E2D6'; ctx.font = '10px Consolas, monospace';
+            ctx.fillStyle = '#334155'; ctx.font = '10px Consolas, monospace';
             ctx.fillText(tw + ' × ' + th + ' tiles · ' + (tw * 192) + ' × ' + (th * 192) + ' px', W / 2, sy - 2);
 
-            const dc = '#D8D3C8';
+            const dc = '#4B5563';
             ctx.strokeStyle = dc; ctx.fillStyle = dc; ctx.lineWidth = 1;
 
             const cy = sy + sh + 34;
@@ -908,13 +910,13 @@
             const ctx = cv.getContext('2d');
             ctx.clearRect(0, 0, cv.width, cv.height);
 
-            ctx.strokeStyle = '#5E5E5E';
+            ctx.strokeStyle = '#C5CAD1';
             ctx.lineWidth = 1;
             for (let gx = 0; gx < cv.width; gx += 26) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, cv.height); ctx.stroke(); }
             for (let gy = 0; gy < cv.height; gy += 26) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(cv.width, gy); ctx.stroke(); }
 
             if (diagLayer === 'both') {
-                ctx.strokeStyle = '#4A443A'; ctx.lineWidth = 2;
+                ctx.strokeStyle = '#4B5563'; ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.moveTo(800, 20); ctx.lineTo(800, 700); ctx.stroke();
                 diagDrawHalf(ctx, d, 0, 798, 'sig');
                 diagDrawHalf(ctx, d, 802, 1600, 'pwr');
@@ -967,7 +969,7 @@
 
             ctx.textAlign = 'left';
             ctx.textBaseline = 'alphabetic';
-            ctx.fillStyle = type === 'sig' ? '#E3A857' : '#8FAE8B';
+            ctx.fillStyle = type === 'sig' ? '#2563EB' : '#16A34A';
             ctx.font = '500 16px Consolas';
             ctx.fillText(type === 'sig' ? 'SINAL' : 'POWER', x0 + 24, 32 + offsetY);
             diagDrawLegend(ctx, x0 + 24, 52 + offsetY, type);
@@ -995,12 +997,12 @@
             d.secs.forEach((s, si) => {
                 const L = secLayout[si];
                 const pos = s.horizontal ? wiringOrderH(s.tw, s.th) : wiringOrder(s.tw, s.th);
-                ctx.fillStyle = 'rgba(0,0,0,0.32)';
+                ctx.fillStyle = 'rgba(31,41,55,0.06)';
                 ctx.fillRect(L.x - 8, L.y - 8, L.w + 16, L.h + 16);
-                ctx.strokeStyle = 'rgba(201,106,90,0.55)';
+                ctx.strokeStyle = 'rgba(220,38,38,0.55)';
                 ctx.lineWidth = 1.2;
                 ctx.strokeRect(L.x - 8 + 0.5, L.y - 8 + 0.5, L.w + 15, L.h + 15);
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fillStyle = '#1F2937';
                 ctx.font = '500 11px Consolas';
                 ctx.fillText('E' + (si + 1) + ' · ' + s.w + 'm × ' + s.h + 'm · ' + s.tt + ' tiles' + (s.horizontal ? ' · HORIZ' : ''), L.x + L.w / 2, L.y - 16);
 
@@ -1035,7 +1037,7 @@
                     for (let i = start + 1; i < end; i++) {
                         ctx.lineTo(L.x + pos[i].col * tilePx + tilePx / 2, L.y + pos[i].row * tilePx + tilePx / 2);
                     }
-                    ctx.strokeStyle = (type === 'pwr') ? col : '#4A443A';
+                    ctx.strokeStyle = (type === 'pwr') ? col : '#4B5563';
                     ctx.lineWidth = 1.8;
                     ctx.stroke();
                     diagMainMarker(ctx, startC, startY, tilePx, col);
@@ -1050,7 +1052,7 @@
                             const mx = (ax + bx) / 2, my = (ay + by) / 2;
                             const ang = Math.atan2(by - ay, bx - ax);
                             const ss = Math.max(3, tilePx * 0.2);
-                            ctx.fillStyle = 'rgba(26,24,21,0.55)';
+                            ctx.fillStyle = 'rgba(31,41,55,0.55)';
                             ctx.beginPath();
                             ctx.moveTo(mx + Math.cos(ang) * ss, my + Math.sin(ang) * ss);
                             ctx.lineTo(mx - Math.cos(ang - 0.5) * ss, my - Math.sin(ang - 0.5) * ss);
@@ -1086,19 +1088,19 @@
                     const uy = wy + hPx + 52 + lu.row * (unitH + gapU);
                     ctx.fillStyle = '#FBFAF7';
                     ctx.fillRect(ux, uy, unitW, unitH);
-                    ctx.strokeStyle = isBk ? '#C96A5A' : '#38342D'; ctx.lineWidth = 1; ctx.strokeRect(ux + 0.5, uy + 0.5, unitW - 1, unitH - 1);
+                    ctx.strokeStyle = isBk ? '#DC2626' : '#4B5563'; ctx.lineWidth = 1; ctx.strokeRect(ux + 0.5, uy + 0.5, unitW - 1, unitH - 1);
                     const ctrlId = String(mu + 1).padStart(2, '0');
                     const ctrlTitle = isBk ? (d.ctrl.name + ' Backup ' + ctrlId) : (d.ctrl.name + ' ' + ctrlId);
-                    ctx.fillStyle = isBk ? '#C96A5A' : '#38342D';
+                    ctx.fillStyle = isBk ? '#DC2626' : '#4B5563';
                     ctx.fillRect(ux, uy, unitW, 14);
                     ctx.fillStyle = '#FFFFFF'; ctx.font = '500 11px Consolas'; ctx.textAlign = 'center';
                     ctx.fillText(ctrlTitle, ux + unitW / 2, uy + 10);
-                    ctx.fillStyle = '#4A443A'; ctx.font = '500 10px Consolas';
+                    ctx.fillStyle = '#4B5563'; ctx.font = '500 10px Consolas';
                     ctx.fillText(d.chainsPerUnit[mu] + ' circuitos · ' + d.tilesPerUnit[mu] + ' tiles', ux + unitW / 2, uy + 28);
-                    ctx.strokeStyle = '#38342D';
+                    ctx.strokeStyle = '#4B5563';
                     ctx.beginPath(); ctx.moveTo(ux + 12, uy + 33); ctx.lineTo(ux + unitW - 12, uy + 33); ctx.stroke();
                     if (d.redunPorts || d.redunUnit) {
-                        ctx.fillStyle = '#6E675A'; ctx.font = '500 8px Consolas'; ctx.textAlign = 'right';
+                        ctx.fillStyle = '#6B7280'; ctx.font = '500 8px Consolas'; ctx.textAlign = 'right';
                         ctx.fillText(isBk ? 'BKUP' : 'MAIN', ux + unitW / 2 - gridW / 2 - 6, uy + 44.5);
                         for (let i = 0; i < d.ctrl.ports; i++) {
                             const px = ux + unitW / 2 - gridW / 2 + 7.5 + i * 15;
@@ -1176,15 +1178,15 @@
                 const quadroX = x0 + 40;
                 ctx.fillStyle = '#FBFAF7';
                 ctx.fillRect(quadroX, baseY, 104, 64);
-                ctx.strokeStyle = '#38342D'; ctx.lineWidth = 1; ctx.strokeRect(quadroX + 0.5, baseY + 0.5, 103, 63);
+                ctx.strokeStyle = '#4B5563'; ctx.lineWidth = 1; ctx.strokeRect(quadroX + 0.5, baseY + 0.5, 103, 63);
                 ctx.fillStyle = '#1A1815'; ctx.font = '500 10px Consolas'; ctx.textAlign = 'center';
                 ctx.fillText('QUADRO ELÉTRICO', quadroX + 52, baseY + 13);
-                ctx.fillStyle = d.quadro ? '#D97706' : '#C96A5A';
+                ctx.fillStyle = d.quadro ? '#D97706' : '#DC2626';
                 ctx.font = '500 18px Consolas';
                 ctx.fillText(d.quadro ? d.quadro + 'A' : '>125A', quadroX + 52, baseY + 33);
-                ctx.fillStyle = '#4A443A'; ctx.font = '500 8.5px Consolas';
+                ctx.fillStyle = '#4B5563'; ctx.font = '500 8.5px Consolas';
                 ctx.fillText('L1 ' + d.phaseLoads[0].toFixed(1) + ' · L2 ' + d.phaseLoads[1].toFixed(1) + ' · L3 ' + d.phaseLoads[2].toFixed(1), quadroX + 52, baseY + 49);
-                ctx.fillStyle = '#6E675A'; ctx.font = '500 8px Consolas';
+                ctx.fillStyle = '#6B7280'; ctx.font = '500 8px Consolas';
                 ctx.fillText('A/fase', quadroX + 52, baseY + 60);
 
                 const cePos = [];
@@ -1192,13 +1194,13 @@
                 const ceStartX = x0 + 40 + 70;
                 const trunkX = quadroX + 52;
                 // tronco vertical do quadro (cabo socapex)
-                ctx.strokeStyle = '#4A443A';
+                ctx.strokeStyle = '#4B5563';
                 ctx.lineWidth = 2.5;
                 ctx.beginPath();
                 ctx.moveTo(trunkX, baseY + 64);
                 ctx.lineTo(trunkX, rowY0 + Math.max(0, d.socapex - 1) * 40 + 13);
                 ctx.stroke();
-                ctx.fillStyle = '#6E675A'; ctx.font = '500 14px Consolas'; ctx.textAlign = 'center';
+                ctx.fillStyle = '#6B7280'; ctx.font = '500 14px Consolas'; ctx.textAlign = 'center';
                 ctx.fillText('↓', trunkX, baseY + 64 + 12);
                 for (let s = 0; s < d.socapex; s++) {
                     const ry = rowY0 + s * 40;
@@ -1208,13 +1210,13 @@
                     const cableY = ry + 13;
                     const ceEndX = ceStartX + cs.length * (46 + gap) - gap;
                     // cabo horizontal (tronco -> CE)
-                    ctx.strokeStyle = '#4A443A';
+                    ctx.strokeStyle = '#4B5563';
                     ctx.lineWidth = 2.5;
                     ctx.beginPath();
                     ctx.moveTo(trunkX, cableY);
                     ctx.lineTo(ceEndX, cableY);
                     ctx.stroke();
-                    ctx.fillStyle = '#6E675A'; ctx.font = '500 11px Consolas'; ctx.textAlign = 'center';
+                    ctx.fillStyle = '#6B7280'; ctx.font = '500 11px Consolas'; ctx.textAlign = 'center';
                     ctx.fillText('SOCA ' + (s + 1), trunkX + 34, cableY - 4);
                     let fx = ceStartX;
                     cs.forEach((x) => {
@@ -1265,7 +1267,7 @@
         function diagDrawPort(ctx, x, y, fill, label) {
             ctx.fillStyle = fill;
             ctx.fillRect(x - 7, y - 7, 14, 14);
-            ctx.strokeStyle = label ? 'rgba(26,24,21,0.5)' : '#4A443A';
+            ctx.strokeStyle = label ? 'rgba(31,41,55,0.5)' : '#4B5563';
             ctx.lineWidth = 1; ctx.strokeRect(x - 6.5, y - 6.5, 13, 13);
             if (label) {
                 ctx.fillStyle = '#1A1815'; ctx.font = '500 8.5px Consolas'; ctx.textAlign = 'center';
@@ -1299,7 +1301,7 @@
                 ctx.beginPath(); ctx.arc(x + 5, y - 3, 5, 0, Math.PI * 2);
                 ctx.fillStyle = '#7dd3fc'; ctx.fill();
                 ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 1; ctx.stroke();
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fillStyle = '#1F2937';
                 ctx.fillText('input main (porta)', x + 15, y);
                 const tx = x + 175;
                 ctx.beginPath();
@@ -1307,18 +1309,18 @@
                 ctx.closePath();
                 ctx.fillStyle = '#fca5a5'; ctx.fill();
                 ctx.strokeStyle = '#1A1815'; ctx.lineWidth = 1; ctx.stroke();
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fillStyle = '#1F2937';
                 ctx.fillText('out → backup', tx + 16, y);
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fillStyle = '#1F2937';
                 ctx.fillText('· cada tile = nº do circuito', tx + 125, y);
             } else {
                 ctx.fillStyle = '#d97706'; ctx.fillRect(x, y - 9, 9, 9);
-                ctx.fillStyle = '#FFFFFF'; ctx.fillText('L1', x + 14, y);
+                ctx.fillStyle = '#1F2937'; ctx.fillText('L1', x + 14, y);
                 ctx.fillStyle = '#2563eb'; ctx.fillRect(x + 40, y - 9, 9, 9);
-                ctx.fillStyle = '#FFFFFF'; ctx.fillText('L2', x + 54, y);
+                ctx.fillStyle = '#1F2937'; ctx.fillText('L2', x + 54, y);
                 ctx.fillStyle = '#16a34a'; ctx.fillRect(x + 80, y - 9, 9, 9);
-                ctx.fillStyle = '#FFFFFF'; ctx.fillText('L3', x + 94, y);
-                ctx.fillStyle = '#FFFFFF';
+                ctx.fillStyle = '#1F2937'; ctx.fillText('L3', x + 94, y);
+                ctx.fillStyle = '#1F2937';
                 ctx.fillText('tiles e derivações coloridas pela fase', x + 120, y);
             }
         }
@@ -1344,7 +1346,7 @@
 
         function diagBuildLegend(d) {
             const el = document.getElementById('legend');
-            let html = '<span><span class="sw" style="background:#C96A5A"></span>cada ecrã E1..En · alinhados pela base · HORIZ = circuito horizontal</span>';
+            let html = '<span><span class="sw" style="background:#DC2626"></span>cada ecrã E1..En · alinhados pela base · HORIZ = circuito horizontal</span>';
             html += '<span><span class="sw" style="background:#7dd3fc"></span>cada cor + número = 1 circuito (coluna sobe / desce / sobe...)</span>';
             html += '<span><span class="sw" style="background:#1A1815"></span>● input main · ▲ out → backup</span>';
             html += '<span><span class="sw" style="background:#d97706"></span>L1 <span class="sw" style="background:#2563eb"></span>L2 <span class="sw" style="background:#16a34a"></span>L3 (power)</span>';
