@@ -1,0 +1,30 @@
+﻿
+> smart-led-calc@1.4.1 tauri
+> tauri build
+
+node.exe :         Info Looking up installed tauri packages to check mismatched versions...
+At C:\Program Files\OpenHands Agent Canvas\resources\node\npm.ps1:30 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (        Info Lo...hed versions...:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Compiling smart-led-calc v1.4.1 (H:\Projeto_LED_Calculator\Smart-Led-Calc\src-tauri)
+    Finished `release` profile [optimized] target(s) in 1m 19s
+       Built application at: H:\Projeto_LED_Calculator\Smart-Led-Calc\src-tauri\target\release\smart-led-calc.exe
+        Info Patching H:\Projeto_LED_Calculator\Smart-Led-Calc\src-tauri\target\release\smart-led-calc.exe with bundle 
+type information: msi
+        Info Target: x64
+     Running candle for "H:\\Projeto_LED_Calculator\\Smart-Led-Calc\\src-tauri\\target\\release\\wix\\x64\\main.wxs"
+     Running light to produce 
+H:\Projeto_LED_Calculator\Smart-Led-Calc\src-tauri\target\release\bundle\msi\Smart-Led-Calc_1.4.1_x64_en-US.msi
+        Info Patching H:\Projeto_LED_Calculator\Smart-Led-Calc\src-tauri\target\release\smart-led-calc.exe with bundle 
+type information: nsis
+        Info Target: x64
+     Running makensis to produce 
+H:\Projeto_LED_Calculator\Smart-Led-Calc\src-tauri\target\release\bundle\nsis\Smart-Led-Calc_1.4.1_x64-setup.exe
+    Finished 2 bundles at:
+        H:\Projeto_LED_Calculator\Smart-Led-Calc\src-tauri\target\release\bundle\msi\Smart-Led-Calc_1.4.1_x64_en-US.msi
+        
+H:\Projeto_LED_Calculator\Smart-Led-Calc\src-tauri\target\release\bundle\nsis\Smart-Led-Calc_1.4.1_x64-setup.exe
+
