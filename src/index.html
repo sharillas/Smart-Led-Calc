@@ -275,7 +275,7 @@
                     <button class="btn-preset" onclick="loadPreset('composto')">Exemplo composto (5 secções)</button>
                 </div>
                 <div class="field" style="margin-top:10px;"><label>Espaçamento entre ecrãs</label>
-                    <input type="number" id="gapD" value="0.5" min="0" step="0.1" style="width:110px;"> <span style="color:var(--text-muted);font-size:0.85rem;">m (1 tile = 0,5 m)</span>
+                    <input type="number" id="gapD" value="0.5" min="0" step="0.001" style="width:110px;"> <span style="color:var(--text-muted);font-size:0.85rem;">m (1 tile = 0,5 m)</span>
                 </div>
                 <div class="field" style="margin-top:12px;"><label>Nome do projeto</label>
                     <input type="text" id="projectName" class="project-name-input" placeholder="ex.: IAPMEI Batalha 2026" style="width:340px;">
@@ -744,23 +744,14 @@
             const suspended = document.getElementById('mountD').value === 'suspenso';
             const ctrl = DIAG_CTRLS[document.getElementById('ctrlD').value];
             const gapM = Math.max(0, parseFloat(document.getElementById('gapD').value) || 0.5);
-            const gapTiles = Math.max(1, Math.round(gapM * 2));
+            const gapTiles = Math.max(0, gapM * 2);
 
             const secs = diagSections.map((s) => {
                 const w = Math.max(0.5, s.w || 1), h = Math.max(0.5, s.h || 1);
                 const tw = Math.ceil(w * 1000 / 500), th = Math.ceil(h * 1000 / 500), tt = tw * th;
-                // vertical (preferido: início e fim do circuito em baixo)
+                // vertical (sempre): início e fim do circuito em baixo
                 const perV = Math.min(signalChainTiles(th), tt);
-                const circV = Math.ceil(tt / perV);
-                // horizontal (poupa portas na controladora, prioridade em ecrãs pequenos/largos)
-                let perSig = perV, horizontal = false;
-                const rowsH = Math.floor(DIAG_CFG.tilesPerPortCap / tw);
-                if (rowsH >= 1) {
-                    const perH = Math.min(rowsH * tw, tt);
-                    const circH = Math.ceil(tt / perH);
-                    // horizontal apenas se poupar portas (empate -> vertical, inicio+fim em baixo)
-                    if (circH < circV) { perSig = perH; horizontal = true; }
-                }
+                const perSig = perV, horizontal = false;
                 const stackCols = Math.max(1, Math.ceil(tw / DIAG_CFG.stackEveryCols));
                 const stackRows = Math.max(1, Math.ceil(h));
                 const stacks = stackCols * stackRows;
@@ -960,7 +951,7 @@
                 bottomReserve = powerFlowHeight(d);
             }
             const top = 84;
-            const tilePx = Math.min(34, (wallRight - wallLeft) / d.totalTw, (H - top - bottomReserve) / d.maxTh);
+            const tilePx = Math.min(80, (wallRight - wallLeft) / d.totalTw, (H - top - bottomReserve) / d.maxTh);
             const hPx = d.maxTh * tilePx;
             const isFull = (x1 - x0) >= 1590;
             const totalSpan = (d.totalTw + d.gapTiles * (d.secs.length - 1)) * tilePx;
@@ -1690,7 +1681,7 @@
             pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(9);
             pdf.setTextColor(110, 103, 90);
-            pdf.text('Plano de Ecrãs — LED Wall (vista frontal, espaçamento entre ecrãs: ' + d.gapM.toFixed(1).replace('.', ',') + ' m)', 15, 26.5);
+            pdf.text('Plano de Ecrãs — LED Wall (vista frontal, espaçamento entre ecrãs: ' + d.gapM.toFixed(3).replace('.', ',') + ' m)', 15, 26.5);
 
             // ---- área de desenho (linha de chão em y=125) ----
             const groundY = 125;
@@ -1777,7 +1768,7 @@
                 if (i < d.secs.length - 1) {
                     extLine(ax + w, groundY, dimY1); extLine(ax + w + gapMM, groundY, dimY1);
                     arrowH(ax + w, ax + w + gapMM, dimY1);
-                    pdf.text(fmtM(d.gapM), ax + w + gapMM / 2, dimY1 - 1.2, { align: 'center' });
+                    pdf.text(d.gapM.toFixed(3).replace('.', ',') + ' m', ax + w + gapMM / 2, dimY1 - 1.2, { align: 'center' });
                 }
                 // cota de altura (no vão à direita)
                 const vx = ax + w + (i < d.secs.length - 1 ? gapMM / 2 : 6);
@@ -1851,7 +1842,7 @@
             const notas = [
                 '1. Ecrãs alinhados pela base (linha de chão).',
                 '2. Cotas em metros; 192 px por tile de 500 mm.',
-                '3. Espaçamento entre ecrãs: ' + d.gapM.toFixed(1).replace('.', ',') + ' m.',
+                '3. Espaçamento entre ecrãs: ' + d.gapM.toFixed(3).replace('.', ',') + ' m.',
                 '4. Total: ' + d.tt + ' tiles · ' + totalM.toFixed(1).replace('.', ',') + ' m largura · ' + maxM.toFixed(1).replace('.', ',') + ' m alt.'
             ];
             notas.forEach((n, i) => pdf.text(n, 14, 168.5 + i * 4.5));
