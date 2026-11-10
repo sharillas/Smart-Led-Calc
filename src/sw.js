@@ -1,4 +1,4 @@
-const CACHE_NAME = 'led-calc-v1.4.1-r2';
+const CACHE_NAME = 'led-calc-v1.5.0-r3';
 const ASSETS = [
   './',
   './index.html',
